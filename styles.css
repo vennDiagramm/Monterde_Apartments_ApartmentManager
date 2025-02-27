@@ -106,7 +106,7 @@ html, body {
     width: fit-content; /* Only as wide as the text */
     max-width: 80%; /* Prevents it from being too wide */
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
     left: 50%; /* Move it to the center */
     transform: translateX(-50%); /* Center it properly */
     border-radius: 10px; /* Optional: rounded corners */
