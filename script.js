@@ -2,13 +2,9 @@ function updateDate() {
   const dateElement = document.querySelector('.date');
   const today = new Date();
 
-  // Format options for the date
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
-
-  // Convert date to a readable format
   const formattedDate = today.toLocaleDateString('en-US', options);
 
-  // Set the formatted date to the span
   dateElement.textContent = formattedDate;
 }
 
