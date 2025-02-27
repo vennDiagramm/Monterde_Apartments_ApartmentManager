@@ -146,6 +146,10 @@ html, body {
     margin: 0px;
 }
 
+.btn:active {
+    transform: translateY(4px);
+  }
+
 .btn-icon {
     height: 70px;
     width: auto;
