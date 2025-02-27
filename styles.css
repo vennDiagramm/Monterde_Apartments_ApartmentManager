@@ -51,7 +51,7 @@ html, body {
     position: relative;
     margin: auto;
     overflow: hidden; /* Prevents overflow */
-    border-radius: 10px;
+    border-radius: 15px;
     top: -13px;
 }
 
@@ -128,15 +128,17 @@ html, body {
     justify-content: space-around;
     padding: 15px;
     background: #fff;
+    gap: 22px;
 }
 
 .btn {
-    height: 150px;
-    width: 200px;
+    height: 175px;
+    width: 270px;
     border-radius: 15px;
     position: relative;
     top: -30px; /* Moves it up */
     background-color: white;
+    margin: 0px;
 }
 
 .btn-icon {
@@ -148,7 +150,7 @@ html, body {
 .tenant-request {
     display: flex;
     align-items: center;
-    padding: 15px;
+    padding: 5px;
     border-top: 1px solid #ddd;
     background: #fff;
     width: 100%;
