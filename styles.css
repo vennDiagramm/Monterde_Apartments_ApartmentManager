@@ -133,6 +133,15 @@ html, body {
 .btn {
     height: 150px;
     width: 200px;
+    border-radius: 15px;
+    position: relative;
+    top: -30px; /* Moves it up */
+    background-color: white;
+}
+
+.btn-icon {
+    height: 70px;
+    width: auto;
 }
 
 /* Tenant Request */
