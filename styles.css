@@ -141,7 +141,7 @@ html, body {
     width: 270px;
     border-radius: 15px;
     position: relative;
-    top: -30px; /* Moves it up */
+    top: -35px; /* Moves it up */
     background-color: white;
     margin: 0px;
 }
@@ -156,14 +156,17 @@ html, body {
     display: flex;
     align-items: center;
     padding: 5px;
-    border-top: 1px solid #ddd;
-    background: #fff;
-    width: 100%;
+    width: 99%;
+    position: relative;
+    top: -20px; /* Move it up by 10px */
 }
+
 
 .tenant-request input {
     flex: 1;
-    border: none;
+    border: 1px solid black;
+    border-radius: 20px;
     padding: 10px;
+    margin-left: 15px;
     font-size: 1rem;
 }
