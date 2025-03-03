@@ -37,6 +37,7 @@ function updateDate() {
 updateDate();
 // End of Date Function
 
+
 // Image Slider Section
 let slideIndex = 1;
 showSlides(slideIndex);
