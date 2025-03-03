@@ -1,3 +1,29 @@
+// Add a Tenant
+
+// End of Add a Tenant Function
+
+
+// Remove a Tenant
+
+// End of Remove a Tenant Function
+
+
+// Edit Tenant Details
+
+// End of Edit Tenant Details Function
+
+
+// Check Rooms
+
+// End of Check Rooms Function
+
+
+// Calculate Rent
+
+// End of Calculate Rent Function
+
+
+// Update the Date daily
 function updateDate() {
   const dateElement = document.querySelector('.date');
   const today = new Date();
@@ -8,8 +34,8 @@ function updateDate() {
   dateElement.textContent = formattedDate;
 }
 
-// Call function to update date on page load
 updateDate();
+// End of Date Function
 
 // Image Slider Section
 let slideIndex = 1;
@@ -40,3 +66,4 @@ function showSlides(n) {
   slides[slideIndex-1].style.display = "block";
   dots[slideIndex-1].className += " active";
 }
+// End of Image Slider Section
