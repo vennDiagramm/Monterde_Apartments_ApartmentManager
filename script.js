@@ -14,6 +14,23 @@
 
 
 // Check Rooms
+async function fetchRooms() {
+  try {
+      const response = await fetch('http://localhost:3000/rooms');
+      const rooms = await response.json();
+
+      // Make sure at least one room exists
+      if (rooms.length > 0) {
+          document.getElementsByClassName('requests-bar')[0].value = 
+              `Room ${rooms[0].Room_ID} - ₱${rooms[0].Room_Price.toLocaleString()}`;
+      }
+  } catch (error) {
+      console.error("Error fetching rooms:", error);
+  }
+}
+
+fetchRooms();
+
 
 // End of Check Rooms Function
 

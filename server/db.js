@@ -1,18 +1,14 @@
-const mysql = require('mysql');
+const mysql = require('mysql2');
 
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
     host: 'localhost', // or your MySQL server IP
     user: 'root', // or another MySQL user
     password: '',
-    database: 'db_dormitory'
+    database: 'db_dorm',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-connection.connect((err) => {
-    if (err) {
-        console.error('Database connection failed: ' + err.stack);
-        return;
-    }
-    console.log('Connected to database.');
-});
-
-module.exports = connection;
+// Use pool.promise() for async queries
+module.exports = pool.promise();
