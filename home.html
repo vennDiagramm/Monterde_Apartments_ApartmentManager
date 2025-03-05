@@ -10,7 +10,7 @@
     <div class="wrapper">
         <!-- Header Section -->
         <header class="header">
-            <h1>Monterde Apartment’s</h1>
+            <h1>Monterde Apartments</h1>
             <span class="date">February 20, 2025</span>
         </header>
 
@@ -56,6 +56,82 @@
             <i class="fas fa-envelope"></i>
             <input type="text" class = "requests-bar" placeholder="Tenant Requests: Hello I would like...">
         </footer>
+
+        <!-- Add Tenant Modal -->
+        <div id="addTenantModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Add New Tenant</h2>
+                <form id="addTenantForm">
+                    <div class="form-group">
+                        <label for="firstName">First Name:</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="middleName">Middle Name (Optional):</label>
+                        <input type="text" id="middleName">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name:</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contact">Contact Number:</label>
+                        <input type="tel" id="contact" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Date of Birth:</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sex">Sex:</label>
+                        <select id="sex" required>
+                            <option value="">Select Sex</option>
+                            <option value="0">Female</option>
+                            <option value="1">Male</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                      <label for="street">Street:</label>
+                      <input type="text" id="street" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="barangay">Barangay:</label>
+                      <input type="text" id="barangay" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="city">City:</label>
+                      <input type="text" id="city" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="region">Region:</label>
+                      <input type="text" id="region" required>
+                  </div>
+
+                    <div class="form-group">
+                        <label for="roomId">Room ID:</label>
+                        <input type="number" id="roomId" required>
+                    </div>
+                    <button type="submit">Add Tenant</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Remove Tenant Modal -->
+        <div id="removeTenantModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Remove Tenant</h2>
+                <form id="removeTenantForm">
+                    <div class="form-group">
+                        <label for="personId">Person ID:</label>
+                        <input type="number" id="personId" required>
+                    </div>
+                    <button type="submit">Remove Tenant</button>
+                </form>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

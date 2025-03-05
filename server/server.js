@@ -20,6 +20,201 @@ app.get('/rooms', async (req, res) => {
 });
 
 
+// Add Person Route with Address
+app.post('/add-person', async (req, res) => {
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const { 
+            firstName, 
+            middleName, 
+            lastName, 
+            contact, 
+            dob, 
+            sex,
+            street,
+            barangay,
+            city,
+            region,
+            roomId 
+        } = req.body;
+
+        // Insert person information
+        const [personResult] = await connection.query(
+            'INSERT INTO person_information (Person_FName, Person_MName, Person_LName, Person_Contact, Person_DOB, Person_sex) VALUES (?, ?, ?, ?, ?, ?)',
+            [firstName, middleName || null, lastName, contact, dob, sex]
+        );
+        const personId = personResult.insertId;
+
+        // Insert City
+        const [cityResult] = await connection.query(
+            'INSERT INTO city (City_Name, Region_Name) VALUES (?, ?)',
+            [city, region]
+        );
+        const cityId = cityResult.insertId;
+
+        // Insert Barangay
+        const [barangayResult] = await connection.query(
+            'INSERT INTO barangay (Brgy_Name, City_ID) VALUES (?, ?)',
+            [barangay, cityId]
+        );
+        const barangayId = barangayResult.insertId;
+
+        // Insert Address
+        const [addressResult] = await connection.query(
+            'INSERT INTO address (Person_Street, Brgy_ID) VALUES (?, ?)',
+            [street, barangayId]
+        );
+        const addressId = addressResult.insertId;
+
+        // Link Person to Address
+        await connection.query(
+            'INSERT INTO person_address (Person_ID, Address_ID) VALUES (?, ?)',
+            [personId, addressId]
+        );
+
+        // Insert Occupant and Contract Details (reusing existing logic)
+        const [occupantResult] = await connection.query(
+            'INSERT INTO occupants (Person_ID) VALUES (?)',
+            [personId]
+        );
+
+        // Check room capacity
+        const [roomCheck] = await connection.query(
+            'SELECT Number_of_Renters, Room_maxRenters FROM room WHERE Room_ID = ?',
+            [roomId]
+        );
+
+        if (roomCheck[0].Number_of_Renters >= roomCheck[0].Room_maxRenters) {
+            await connection.rollback();
+            return res.status(400).json({ error: "Room is at maximum capacity" });
+        }
+
+        // Update room occupancy
+        await connection.query(
+            'UPDATE room SET Number_of_Renters = Number_of_Renters + 1 WHERE Room_ID = ?',
+            [roomId]
+        );
+
+        // Create contract details
+        await connection.query(
+            'INSERT INTO contract_details (Room_ID, Occupants_ID, MoveIn_date, MoveOut_date, Actual_Move_In_Date, Room_Price, Down_Payment) VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 6 MONTH), CURDATE(), (SELECT Room_Price FROM room WHERE Room_ID = ?), 0)',
+            [roomId, occupantResult.insertId, roomId]
+        );
+
+        await connection.commit();
+        res.json({ personId });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ error: "Failed to add person and address" });
+    } finally {
+        connection.release();
+    }
+});
+
+// Add Occupant Route
+app.post('/add-occupant', async (req, res) => {
+    try {
+        const { personId, roomId } = req.body;
+
+        // Check room capacity
+        const [roomCheck] = await db.query(
+            'SELECT Number_of_Renters, Room_maxRenters FROM room WHERE Room_ID = ?',
+            [roomId]
+        );
+
+        if (roomCheck[0].Number_of_Renters >= roomCheck[0].Room_maxRenters) {
+            return res.status(400).json({ error: "Room is at maximum capacity" });
+        }
+
+        // Insert occupant
+        const [occupantResult] = await db.query(
+            'INSERT INTO occupants (Person_ID) VALUES (?)',
+            [personId]
+        );
+
+        // Update room occupancy
+        await db.query(
+            'UPDATE room SET Number_of_Renters = Number_of_Renters + 1 WHERE Room_ID = ?',
+            [roomId]
+        );
+
+        // Create contract details
+        await db.query(
+            'INSERT INTO contract_details (Room_ID, Occupants_ID, MoveIn_date, MoveOut_date, Actual_Move_In_Date, Room_Price, Down_Payment) VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 6 MONTH), CURDATE(), (SELECT Room_Price FROM room WHERE Room_ID = ?), 0)',
+            [roomId, occupantResult.insertId, roomId]
+        );
+
+        res.json({ message: "Occupant added successfully" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to add occupant" });
+    }
+});
+
+// Remove Tenant Route
+app.delete('/remove-tenant/:personId', async (req, res) => {
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        const personId = req.params.personId;
+
+        // Find the occupant and room
+        const [occupantResult] = await connection.query(
+            'SELECT o.Occupants_ID, cd.Room_ID FROM occupants o ' +
+            'JOIN contract_details cd ON o.Occupants_ID = cd.Occupants_ID ' +
+            'WHERE o.Person_ID = ?',
+            [personId]
+        );
+
+        if (occupantResult.length === 0) {
+            await connection.rollback();
+            return res.status(404).json({ error: "Tenant not found" });
+        }
+
+        const { Occupants_ID, Room_ID } = occupantResult[0];
+
+        // Remove contract details
+        await connection.query(
+            'DELETE FROM contract_details WHERE Occupants_ID = ?',
+            [Occupants_ID]
+        );
+
+        // Remove occupant
+        await connection.query(
+            'DELETE FROM occupants WHERE Occupants_ID = ?',
+            [Occupants_ID]
+        );
+
+        // Reduce room occupancy
+        await connection.query(
+            'UPDATE room SET Number_of_Renters = Number_of_Renters - 1 WHERE Room_ID = ?',
+            [Room_ID]
+        );
+
+        // Remove person information
+        await connection.query(
+            'DELETE FROM person_information WHERE Person_ID = ?',
+            [personId]
+        );
+
+        await connection.commit();
+        res.json({ message: "Tenant removed successfully" });
+    } catch (error) {
+        await connection.rollback();
+        console.error(error);
+        res.status(500).json({ error: "Failed to remove tenant" });
+    } finally {
+        connection.release();
+    }
+});
+
+
 // 🔹 Start the Server
 app.listen(3000, () => {
     console.log('Server running at http://localhost:3000');
