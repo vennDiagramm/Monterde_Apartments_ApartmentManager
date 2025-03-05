@@ -1,8 +1,58 @@
-// Add a Tenant
+// Add a Tenant -- Di ako sure.... Paano mag test
+async function addTenant() {
+  try {
+      const tenantData = {
+          firstName: document.getElementById('firstName').value,
+          middleName: document.getElementById('middleName').value,
+          lastName: document.getElementById('lastName').value,
+          contact: document.getElementById('contactNumber').value,
+          dateOfBirth: document.getElementById('dateOfBirth').value,
+          sex: document.getElementById('sex').value,
+          roomId: document.getElementById('roomAssignment').value
+      };
 
+      const response = await fetch('http://localhost:3000/tenants', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(tenantData)
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+          alert('Tenant added successfully!');
+          // Optional: Clear form or refresh tenant list
+          fetchTenants();
+      } else {
+          throw new Error(result.error || 'Failed to add tenant');
+      }
+  } catch (error) {
+      console.error("Error adding tenant:", error);
+      alert(error.message);
+  }
+}
 // End of Add a Tenant Function
+async function removeTenant(tenantId) {
+  try {
+      const response = await fetch(`http://localhost:3000/tenants/${tenantId}`, {
+          method: 'DELETE'
+      });
 
-
+      const result = await response.json();
+      
+      if (response.ok) {
+          alert('Tenant removed successfully!');
+          fetchTenants();
+      } else {
+          throw new Error(result.error || 'Failed to remove tenant');
+      }
+  } catch (error) {
+      console.error("Error removing tenant:", error);
+      alert(error.message);
+  }
+}
 // Remove a Tenant
 
 // End of Remove a Tenant Function
