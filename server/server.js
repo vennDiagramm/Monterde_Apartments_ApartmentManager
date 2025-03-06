@@ -19,8 +19,6 @@ app.get('/rooms', async (req, res) => {
     }
 });
 
-
-// Add Person Route with Address
 app.post('/add-person', async (req, res) => {
     const connection = await db.getConnection();
 
@@ -38,7 +36,8 @@ app.post('/add-person', async (req, res) => {
             barangay,
             city,
             region,
-            roomId 
+            roomId,
+            apartmentLocation // Apartment Location from the active slide
         } = req.body;
 
         // Insert person information
@@ -75,11 +74,12 @@ app.post('/add-person', async (req, res) => {
             [personId, addressId]
         );
 
-        // Insert Occupant and Contract Details (reusing existing logic)
+        // Insert Occupant
         const [occupantResult] = await connection.query(
             'INSERT INTO occupants (Person_ID) VALUES (?)',
             [personId]
         );
+        const occupantId = occupantResult.insertId;
 
         // Check room capacity
         const [roomCheck] = await connection.query(
@@ -97,63 +97,49 @@ app.post('/add-person', async (req, res) => {
             'UPDATE room SET Number_of_Renters = Number_of_Renters + 1 WHERE Room_ID = ?',
             [roomId]
         );
+        
+        let aptLocID;
 
-        // Create contract details
+        if (apartmentLocation.startsWith("Matina")) {
+            aptLocID = 1;
+        } else if (apartmentLocation.startsWith("Sesame")) {
+            aptLocID = 2;
+        } else if (apartmentLocation.startsWith("Nabua")) {
+            aptLocID = 3;
+        } else {
+            await connection.rollback();
+            return res.status(400).json({ error: "Invalid apartment location" });
+        }
+        
+        // Insert Contract into `contract` table
         await connection.query(
-            'INSERT INTO contract_details (Room_ID, Occupants_ID, MoveIn_date, MoveOut_date, Actual_Move_In_Date, Room_Price, Down_Payment) VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 6 MONTH), CURDATE(), (SELECT Room_Price FROM room WHERE Room_ID = ?), 0)',
-            [roomId, occupantResult.insertId, roomId]
+            `INSERT INTO contract (Person_ID, Apt_Loc_ID, Date) VALUES (?, ?, CURDATE())`,
+            [personId, aptLocID]
+        );
+        
+        // Insert Contract Details
+        await connection.query(
+            `INSERT INTO contract_details 
+            (Room_ID, Occupants_ID, MoveIn_date, MoveOut_date, Actual_Move_In_Date, Room_Price, Down_Payment) 
+            VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 6 MONTH), CURDATE(), 
+            (SELECT Room_Price FROM room WHERE Room_ID = ?), 0)`,
+            [roomId, occupantId, roomId]
         );
 
         await connection.commit();
-        res.json({ personId });
+        res.json({ personId, message: "Tenant and contract added successfully!" });
     } catch (error) {
         await connection.rollback();
         console.error(error);
-        res.status(500).json({ error: "Failed to add person and address" });
+        res.status(500).json({ error: "Failed to add person and contract details" });
     } finally {
         connection.release();
     }
 });
 
-// Add Occupant Route
-app.post('/add-occupant', async (req, res) => {
-    try {
-        const { personId, roomId } = req.body;
 
-        // Check room capacity
-        const [roomCheck] = await db.query(
-            'SELECT Number_of_Renters, Room_maxRenters FROM room WHERE Room_ID = ?',
-            [roomId]
-        );
 
-        if (roomCheck[0].Number_of_Renters >= roomCheck[0].Room_maxRenters) {
-            return res.status(400).json({ error: "Room is at maximum capacity" });
-        }
 
-        // Insert occupant
-        const [occupantResult] = await db.query(
-            'INSERT INTO occupants (Person_ID) VALUES (?)',
-            [personId]
-        );
-
-        // Update room occupancy
-        await db.query(
-            'UPDATE room SET Number_of_Renters = Number_of_Renters + 1 WHERE Room_ID = ?',
-            [roomId]
-        );
-
-        // Create contract details
-        await db.query(
-            'INSERT INTO contract_details (Room_ID, Occupants_ID, MoveIn_date, MoveOut_date, Actual_Move_In_Date, Room_Price, Down_Payment) VALUES (?, ?, CURDATE(), DATE_ADD(CURDATE(), INTERVAL 6 MONTH), CURDATE(), (SELECT Room_Price FROM room WHERE Room_ID = ?), 0)',
-            [roomId, occupantResult.insertId, roomId]
-        );
-
-        res.json({ message: "Occupant added successfully" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to add occupant" });
-    }
-});
 
 // Remove Tenant Route
 app.delete('/remove-tenant/:personId', async (req, res) => {

@@ -9,6 +9,21 @@ function closeModal(modalId) {
   modal.style.display = "none";
 }
 
+// Function to get the active apartment name
+function getActiveApartment() {
+  // Find all slides
+  let slides = document.getElementsByClassName('mySlides');
+  
+  // Loop through slides to find the active one
+  for (let slide of slides) {
+      if (slide.style.display === 'block') { // Check if the slide is visible
+          let textElement = slide.querySelector('.text'); // Find the text inside the active slide
+          return textElement ? textElement.innerText.trim() : '';
+      }
+  }
+
+  return ''; // Return empty if no active slide is found
+}
 
 // Add a Tenant
 async function addTenant(event) {
@@ -21,17 +36,22 @@ async function addTenant(event) {
       const contact = document.getElementById('contact').value;
       const dob = document.getElementById('dob').value;
       const sex = document.getElementById('sex').value;
-      const roomId = document.getElementById('roomId').value;
-      
-      // New address fields
-      const street = document.getElementById('street').value;
-      const barangay = document.getElementById('barangay').value;
+
+      // City and Address fields
       const city = document.getElementById('city').value;
       const region = document.getElementById('region').value;
+      const barangay = document.getElementById('barangay').value;
+      const street = document.getElementById('street').value;
+
+      // Get the active apartment location
+      let apartmentLocation = getActiveApartment();
+
+      // Room ID (sen)
+      const roomId = document.getElementById('roomId').value;
 
       // Validate inputs
-      if (!firstName || !lastName || !contact || !dob || !sex || !roomId ||
-          !street || !barangay || !city || !region) {
+      if (!firstName || !lastName || !contact || !dob || !sex || 
+          !city || !region || !barangay || !street || !roomId || !apartmentLocation) {
           alert("Please fill in all required fields!");
           return;
       }
@@ -49,11 +69,12 @@ async function addTenant(event) {
               contact,
               dob,
               sex,
-              roomId,
-              street,
-              barangay,
               city,
-              region
+              region,
+              barangay,
+              street,
+              apartmentLocation, // Include apartment location
+              roomId
           })
       });
 
@@ -61,17 +82,15 @@ async function addTenant(event) {
           throw new Error('Failed to add tenant');
       }
 
-      alert('Tenant added successfully!');
+      alert('Tenant and occupant added successfully!');
       
       // Close modal and reset form
       closeModal('addTenantModal');
       event.target.reset();
-      
-      // Refresh rooms to update the display
-      fetchRooms();
+
   } catch (error) {
       console.error("Error adding tenant:", error);
-      alert("Failed to add tenant. " + error.message);
+      alert("Failed to complete tenant registration. " + error.message);
   }
 }
 // End of Add a Tenant Function
