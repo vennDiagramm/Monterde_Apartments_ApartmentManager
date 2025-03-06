@@ -43,7 +43,7 @@
         <!-- Buttons Section -->
         <nav class="buttons">
             <!-- Placeholder sa -->
-            <button class="btn"><img src="images\add-tenant.png" alt="Icon" class="btn-icon"><br>Add Tenant</button>
+            <button class="btn" id="addTenantButton"><img src="images\add-tenant.png" alt="Icon" class="btn-icon"><br>Add Tenant</button>
             <button class="btn"><img src="images\remove-tenant.png" alt="Icon" class="btn-icon"><br>Remove Tenant</button>
             <button class="btn"><img src="images\edit-tenant.png" alt="Icon" class="btn-icon" class="middle-button"><br>Edit Tenant</button>
             <button class="btn"><img src="images\room.png" alt="Icon" class="btn-icon"><br>Rooms</button>
@@ -85,13 +85,14 @@
                     </div>
                     <div class="form-group">
                         <label for="sex">Sex:</label>
-                        <select id="sex" required>
+                        <select id="sex" required> <!-- Drop down -->
                             <option value="">Select Sex</option>
                             <option value="0">Female</option>
                             <option value="1">Male</option>
                         </select>
                     </div>
                     
+                    <!-- FOR : Address -->
                     <div class="form-group">
                       <label for="street">Street:</label>
                       <input type="text" id="street" required>
@@ -109,14 +110,18 @@
                       <input type="text" id="region" required>
                   </div>
 
+                  <!-- FOR : rooms -->
                     <div class="form-group">
                         <label for="roomId">Room ID:</label>
-                        <input type="number" id="roomId" required>
+                        <select id="roomId" required> <!-- So rooms selected rooms will drop down -->
+                            <option value="">Select a Room</option>
+                        </select>
                     </div>
                     <button type="submit">Add Tenant</button>
                 </form>
             </div>
         </div>
+        <!-- End of Add Tenant Modal -->
 
         <!-- Remove Tenant Modal -->
         <div id="removeTenantModal" class="modal">

@@ -19,6 +19,7 @@ app.get('/rooms', async (req, res) => {
     }
 });
 
+// Add Tenant Route
 app.post('/add-person', async (req, res) => {
     const connection = await db.getConnection();
 

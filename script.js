@@ -25,6 +25,61 @@ function getActiveApartment() {
   return ''; // Return empty if no active slide is found
 }
 
+// Show by rooms
+document.addEventListener("DOMContentLoaded", function () {
+  const roomDropdown = document.getElementById("roomId");
+  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
+  const apartmentRooms = {
+      "Sesame Apartment": [1, 2, 3, 4, 5, 6, 7, 8],
+      "Matina Apartment": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+      "Nabua Apartment": [19, 20, 21, 22]
+  };
+
+  function updateRoomDropdown(apartment) {
+      roomDropdown.innerHTML = ""; // Clear previous options
+      if (apartmentRooms[apartment]) {
+          apartmentRooms[apartment].forEach(room => {
+              let option = document.createElement("option");
+              option.value = room;
+              option.textContent = `Room ${room}`;
+              roomDropdown.appendChild(option);
+          });
+      }
+  }
+
+  function getCurrentApartment() {
+      const slides = document.querySelectorAll(".mySlides");
+      let currentApartment = "";
+      slides.forEach((slide, index) => {
+          if (slide.style.display === "block") {
+              currentApartment = apartmentNames[index];
+          }
+      });
+      return currentApartment;
+  }
+
+  document.querySelector(".next").addEventListener("click", () => {
+      setTimeout(() => {
+          updateRoomDropdown(getCurrentApartment());
+      }, 300);
+  });
+
+  document.querySelector(".prev").addEventListener("click", () => {
+      setTimeout(() => {
+          updateRoomDropdown(getCurrentApartment());
+      }, 300);
+  });
+
+  updateRoomDropdown(getCurrentApartment()); // Initialize on load
+});
+// End of Show by rooms Function
+
+// Update Rooms available in the dropdown
+document.getElementById("addTenantButton").addEventListener("click", function () {
+  updateRoomDropdown(getCurrentApartment()); // Update dropdown when opening modal
+});
+// End of Update Rooms available 
+
 // Add a Tenant
 async function addTenant(event) {
   event.preventDefault();
@@ -251,3 +306,4 @@ function showSlides(n) {
   dots[slideIndex-1].className += " active";
 }
 // End of Image Slider Section
+
