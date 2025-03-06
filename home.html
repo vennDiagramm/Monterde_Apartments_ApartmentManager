@@ -148,7 +148,7 @@
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h2>Manage Rooms</h2>
-                
+
                 <!-- Room Selection -->
                 <div class="form-group">
                     <label for="roomSelect">Select Room:</label>
@@ -158,7 +158,24 @@
                     </select>
                 </div>
 
-                <!-- Room Details Form -->
+                <!-- Room Table -->
+                <table id="roomTable">
+                    <thead>
+                        <tr>
+                            <th>Room ID</th>
+                            <th>Floor</th>
+                            <th>Tenants</th>
+                            <th>Max Renters</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rooms will be inserted dynamically -->
+                    </tbody>
+                </table>
+
+                <!-- Room Edit Form -->
                 <div class="form-group">
                     <label for="roomFloor">Room Floor:</label>
                     <input type="number" id="roomFloor">
@@ -185,6 +202,8 @@
                         <option value="1">Vacant</option>
                         <option value="2">Occupied</option>
                         <option value="3">Maintenance</option>
+                        <option value="4">Reserve</option>
+                        <option value="5">Unavailable</option>
                     </select>
                 </div>
 
