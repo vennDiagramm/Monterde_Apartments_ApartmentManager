@@ -10,59 +10,66 @@ function closeModal(modalId) {
 }
 
 // Function to get the active apartment name
-function getActiveApartment() {
-  // Find all slides
-  let slides = document.getElementsByClassName('mySlides');
-  
-  // Loop through slides to find the active one
-  for (let slide of slides) {
-      if (slide.style.display === 'block') { // Check if the slide is visible
-          let textElement = slide.querySelector('.text'); // Find the text inside the active slide
-          return textElement ? textElement.innerText.trim() : '';
-      }
-  }
+function getCurrentApartment() {
+  const slides = document.querySelectorAll(".mySlides");
+  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
+  let activeIndex = -1;
 
-  return ''; // Return empty if no active slide is found
+  slides.forEach((slide, index) => {
+      if (slide.classList.contains("active")) {
+          activeIndex = index;
+      }
+  });
+
+  return activeIndex !== -1 ? apartmentNames[activeIndex] : null;
 }
+// End of Function to get the active apartment name
+
 
 /**  ----------------------     ROOMS SECTIONS    ----------------------     **/
-// Show by rooms
-document.addEventListener("DOMContentLoaded", function () {
+
+// Update room dropdown based on selected apartment (Now Global)
+function updateRoomDropdown(apartment) {
   const roomDropdown = document.getElementById("roomId");
-  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
-  const apartmentRooms = {
-      "Sesame Apartment": [1, 2, 3, 4, 5, 6, 7, 8],
-      "Matina Apartment": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
-      "Nabua Apartment": [19, 20, 21, 22]
+  if (!roomDropdown) return;
+  
+  roomDropdown.innerHTML = ""; // Clear existing options
+
+  // Map apartments to their Apt_Loc_ID
+  const apartmentMap = {
+      "Matina Apartment": 1,
+      "Sesame Apartment": 2,
+      "Nabua Apartment": 3
   };
 
-  // Update room dropdown based on selected apartment
-  function updateRoomDropdown(apartment) {
-    const roomDropdowns = [document.getElementById("roomId"), document.getElementById("roomSelect")];
+  const aptLocId = apartmentMap[apartment];
+  if (!aptLocId) return;
 
-    const apartmentRooms = {
-        "Sesame Apartment": [1, 2, 3, 4, 5, 6, 7, 8],
-        "Matina Apartment": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
-        "Nabua Apartment": [19, 20, 21, 22]
-    };
-
-    roomDropdowns.forEach(dropdown => {
-        if (dropdown) {
-            dropdown.innerHTML = ""; // Clear existing options
-            if (apartmentRooms[apartment]) {
-                apartmentRooms[apartment].forEach(room => {
-                    let option = document.createElement("option");
-                    option.value = room;
-                    option.textContent = `Room ${room}`;
-                    dropdown.appendChild(option);
-                });
-            }
-        }
-    });
+  // Fetch available rooms from the database
+  fetch(`/getRooms/${aptLocId}`)
+      .then(response => response.json())
+      .then(data => {
+          if (data.length === 0) {
+              let option = document.createElement("option");
+              option.textContent = "No available rooms";
+              roomDropdown.appendChild(option);
+          } else {
+              data.forEach(room => {
+                  let option = document.createElement("option");
+                  option.value = room.Room_ID;
+                  option.textContent = `Room ${room.Room_ID}`;
+                  roomDropdown.appendChild(option);
+              });
+          }
+      })
+      .catch(error => console.error("Error fetching rooms:", error));
 }
-// End of Show by rooms Function
 
-// Get the current apartment name
+// Show by rooms
+document.addEventListener("DOMContentLoaded", function () {
+  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
+
+  // Get the current apartment name
   function getCurrentApartment() {
       const slides = document.querySelectorAll(".mySlides");
       let currentApartment = "";
@@ -73,7 +80,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return currentApartment;
   }
-  // End of Get the current apartment name
 
   // Event Listeners
   document.querySelector(".next").addEventListener("click", () => {
@@ -92,11 +98,14 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 // End of Show by rooms Function
 
+
 // Update Rooms available in the dropdown
 document.getElementById("addTenantButton").addEventListener("click", function () {
-  updateRoomDropdown(getCurrentApartment()); // Update dropdown when opening modal
+  updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
 });
 // End of Update Rooms available 
+
+
 
 // Update Room 
 document.addEventListener("DOMContentLoaded", function () {
@@ -126,6 +135,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 // End of Update Room Function
+
+/**  ----------------------     END OF ROOMS SECTION    ----------------------     **/
 
 
 /**  ----------------------     TENANTS SECTIONS    ----------------------     **/
@@ -328,7 +339,7 @@ updateDate();
 // End of Date Function
 
 
-// Image Slider Section
+/**  ----------------------     IMAGE SLIDERS SECTIONS    ----------------------     **/
 let slideIndex = 1;
 showSlides(slideIndex);
 
@@ -348,14 +359,20 @@ function showSlides(n) {
   let dots = document.getElementsByClassName("dot");
   if (n > slides.length) {slideIndex = 1}
   if (n < 1) {slideIndex = slides.length}
+  
   for (i = 0; i < slides.length; i++) {
     slides[i].style.display = "none";
+    slides[i].classList.remove("active");  // Remove "active" from all slides
   }
+  
   for (i = 0; i < dots.length; i++) {
     dots[i].className = dots[i].className.replace(" active", "");
   }
-  slides[slideIndex-1].style.display = "block";
-  dots[slideIndex-1].className += " active";
+  
+  slides[slideIndex - 1].style.display = "block";
+  slides[slideIndex - 1].classList.add("active"); // Mark the current slide as "active"
+  dots[slideIndex - 1].className += " active";
 }
-// End of Image Slider Section
+
+/**  ----------------------     END OF IMAGE SLIDERS    ----------------------     **/
 

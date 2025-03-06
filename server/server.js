@@ -19,6 +19,25 @@ app.get('/rooms', async (req, res) => {
     }
 });
 
+// Get rooms by aptLocId
+app.get("/getRooms/:aptLocId", (req, res) => {
+    const aptLocId = req.params.aptLocId;
+    const sql = "SELECT Room_ID FROM room WHERE Apt_Loc_ID = ? AND Room_Status_ID = 1";
+
+    db.query(sql, [aptLocId], (err, results) => {
+        if (err) {
+            console.error("Error fetching rooms:", err);
+            res.status(500).json({ error: "Database error" });
+        } else {
+            res.json(results);
+        }
+    });
+});
+// End of Get rooms by aptLocId
+
+
+
+
 // Add Tenant Route
 app.post('/add-person', async (req, res) => {
     const connection = await db.getConnection();
