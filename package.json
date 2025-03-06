@@ -6,8 +6,6 @@
     "mysql2": "^3.12.0"
   },
   "scripts": {
-    "start": "node server/server.js",
-    "install": "npm install"
+    "start": "node server/server.js"
   }
 }
-
