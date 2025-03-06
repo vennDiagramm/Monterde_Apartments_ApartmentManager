@@ -25,6 +25,7 @@ function getActiveApartment() {
   return ''; // Return empty if no active slide is found
 }
 
+/**  ----------------------     ROOMS SECTIONS    ----------------------     **/
 // Show by rooms
 document.addEventListener("DOMContentLoaded", function () {
   const roomDropdown = document.getElementById("roomId");
@@ -97,8 +98,37 @@ document.getElementById("addTenantButton").addEventListener("click", function ()
 });
 // End of Update Rooms available 
 
+// Update Room 
+document.addEventListener("DOMContentLoaded", function () {
+  const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
+  const priceInput = document.getElementById("roomPrice");
+
+  // Prevent negative values for all number fields
+  numericInputs.forEach(id => {
+      const inputField = document.getElementById(id);
+      if (inputField) {
+          inputField.addEventListener("input", function () {
+              if (this.value < 0) this.value = 0; // Ensure no negative values
+          });
+      }
+  });
+
+  // Room Price: Allow only two decimal places & prevent negatives
+  if (priceInput) {
+      priceInput.addEventListener("input", function () {
+          if (this.value < 0) {
+              this.value = "0.00";
+          } else {
+              // Ensure only two decimal places
+              this.value = parseFloat(this.value).toFixed(2);
+          }
+      });
+  }
+});
+// End of Update Room Function
 
 
+/**  ----------------------     TENANTS SECTIONS    ----------------------     **/
 // Add a Tenant
 async function addTenant(event) {
   event.preventDefault();
@@ -218,7 +248,6 @@ async function removeTenant(event) {
 
 
 // Setup Event Listeners -- para click sa modal, popup ang modal
-// Setup Event Listeners -- for modal interactions
 document.addEventListener('DOMContentLoaded', () => {
   // Hide all modals when page loads
   const modals = document.querySelectorAll('.modal');
@@ -276,8 +305,6 @@ async function fetchRooms() {
 }
 
 fetchRooms();
-
-
 // End of Check Rooms Function
 
 
