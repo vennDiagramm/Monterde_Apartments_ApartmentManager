@@ -35,18 +35,33 @@ document.addEventListener("DOMContentLoaded", function () {
       "Nabua Apartment": [19, 20, 21, 22]
   };
 
+  // Update room dropdown based on selected apartment
   function updateRoomDropdown(apartment) {
-      roomDropdown.innerHTML = ""; // Clear previous options
-      if (apartmentRooms[apartment]) {
-          apartmentRooms[apartment].forEach(room => {
-              let option = document.createElement("option");
-              option.value = room;
-              option.textContent = `Room ${room}`;
-              roomDropdown.appendChild(option);
-          });
-      }
-  }
+    const roomDropdowns = [document.getElementById("roomId"), document.getElementById("roomSelect")];
 
+    const apartmentRooms = {
+        "Sesame Apartment": [1, 2, 3, 4, 5, 6, 7, 8],
+        "Matina Apartment": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+        "Nabua Apartment": [19, 20, 21, 22]
+    };
+
+    roomDropdowns.forEach(dropdown => {
+        if (dropdown) {
+            dropdown.innerHTML = ""; // Clear existing options
+            if (apartmentRooms[apartment]) {
+                apartmentRooms[apartment].forEach(room => {
+                    let option = document.createElement("option");
+                    option.value = room;
+                    option.textContent = `Room ${room}`;
+                    dropdown.appendChild(option);
+                });
+            }
+        }
+    });
+}
+// End of Show by rooms Function
+
+// Get the current apartment name
   function getCurrentApartment() {
       const slides = document.querySelectorAll(".mySlides");
       let currentApartment = "";
@@ -57,7 +72,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return currentApartment;
   }
+  // End of Get the current apartment name
 
+  // Event Listeners
   document.querySelector(".next").addEventListener("click", () => {
       setTimeout(() => {
           updateRoomDropdown(getCurrentApartment());
@@ -79,6 +96,8 @@ document.getElementById("addTenantButton").addEventListener("click", function ()
   updateRoomDropdown(getCurrentApartment()); // Update dropdown when opening modal
 });
 // End of Update Rooms available 
+
+
 
 // Add a Tenant
 async function addTenant(event) {
@@ -199,20 +218,26 @@ async function removeTenant(event) {
 
 
 // Setup Event Listeners -- para click sa modal, popup ang modal
+// Setup Event Listeners -- for modal interactions
 document.addEventListener('DOMContentLoaded', () => {
   // Hide all modals when page loads
   const modals = document.querySelectorAll('.modal');
-  modals.forEach(modal => {
-    modal.style.display = 'none';
+  modals.forEach(modal => modal.style.display = 'none');
+
+  // Modal Buttons
+  const modalButtons = {
+      addTenant: document.querySelector('.buttons button:nth-child(1)'),
+      removeTenant: document.querySelector('.buttons button:nth-child(2)'),
+      rooms: document.querySelector('.buttons button:nth-child(4)')
+  };
+
+  // Event Listeners for Opening Modals
+  modalButtons.addTenant.addEventListener('click', () => openModal('addTenantModal'));
+  modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
+  modalButtons.rooms.addEventListener('click', () => {
+      openModal('roomsModal');
+      updateRoomDropdown(getCurrentApartment()); // Ensure the dropdown updates
   });
-
-  // Add Tenant Button
-  const addTenantBtn = document.querySelector('.buttons button:nth-child(1)');
-  addTenantBtn.addEventListener('click', () => openModal('addTenantModal'));
-
-  // Remove Tenant Button
-  const removeTenantBtn = document.querySelector('.buttons button:nth-child(2)');
-  removeTenantBtn.addEventListener('click', () => openModal('removeTenantModal'));
 
   // Close Modal Buttons
   const closeButtons = document.querySelectorAll('.close-button');
@@ -222,8 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
           closeModal(modalId);
       });
   });
-
 });
+// End of Setup Event Listeners
 
 // Form Submissions
 const addTenantForm = document.getElementById('addTenantForm');
