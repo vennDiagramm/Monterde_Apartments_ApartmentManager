@@ -1,16 +1,16 @@
 // Modal Utility Functions
-function openModal(modalId) {
+async function openModal(modalId) {
   const modal = document.getElementById(modalId);
   modal.style.display = "block";
 }
 
-function closeModal(modalId) {
+async function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   modal.style.display = "none";
 }
 
 // Get rooms by aptLocId
-function getCurrentApartment() {
+async function getCurrentApartment() {
     const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
     const slides = document.querySelectorAll(".mySlides");
     let currentApartment = "";
@@ -28,7 +28,7 @@ function getCurrentApartment() {
 /**  ----------------------     ROOMS SECTIONS    ----------------------     **/
 
 // Update room dropdown based on selected apartment (Now Global)
-function updateRoomDropdown(apartment) {
+async function updateRoomDropdown(apartment) {
     const roomDropdown = document.getElementById("roomId");
     if (!roomDropdown) return;
     
@@ -103,92 +103,15 @@ document.addEventListener("DOMContentLoaded", function () {
 document.getElementById("addTenantButton").addEventListener("click", function () {
   updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
 });
+
+document.getElementById("roomsButton").addEventListener("click", function () {
+    updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
+  });
 // End of Update  Rooms available in the dropdown
 
 
-
-// Fetch Rooms (UPDATE ROOMS) && (VIEW ROOMS) && (POST UPDATE)
-// Edit Rooms
-window.addEventListener('DOMContentLoaded', function () {
-    // Open the rooms modal when the 'Rooms' button is clicked
-    document.getElementById('roomsButton').addEventListener('click', function () {
-        document.getElementById('roomsModal').style.display = 'block';
-        updateRoomTable(); // Ensure table updates based on the current apartment
-    });
-
-    // Close the modal when clicking the close button
-    document.querySelectorAll('.close-button').forEach(button => {
-        button.addEventListener('click', function () {
-            document.getElementById('roomsModal').style.display = 'none';
-        });
-    });
-
-    // Update Room - Prevent invalid inputs
-    const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
-    const priceInput = document.getElementById("roomPrice");
-
-    // Prevent negative values for all number fields
-    numericInputs.forEach(id => {
-        const inputField = document.getElementById(id);
-        if (inputField) {
-            inputField.addEventListener("input", function () {
-                if (this.value < 0) this.value = 0; // Ensure no negative values
-            });
-        }
-    });
-
-    // Ensure room price input allows only two decimal places & no negatives
-    if (priceInput) {
-        priceInput.addEventListener("input", function () {
-            if (this.value < 0) {
-                this.value = "0.00";
-            } else {
-                // Limit to two decimal places
-                this.value = parseFloat(this.value).toFixed(2);
-            }
-        });
-    }
-
-    // Handle update room button click
-    document.getElementById("updateRoom").addEventListener("click", function () {
-        updateRoom();
-    });
-    // End of Update Room Function
-});
-
-// Fetch rooms based on the current apartment
-document.getElementById('roomsButton').addEventListener('click', async function () {
-    document.getElementById('roomsModal').style.display = 'block';
-
-    const apartment = getCurrentApartment(); // Get the apartment name
-    const apartmentMap = {
-        "Matina Apartment": 1,
-        "Sesame Apartment": 2,
-        "Nabua Apartment": 3
-    };
-    const aptLocId = apartmentMap[apartment];
-    if (!aptLocId) return;
-
-    await updateRoomTable(); // Populate table
-    await updateRoomDropdown(aptLocId); // Populate dropdown
-});
-
-
-// Get the current apartment name based on the image slider
-function getCurrentApartment() {
-    const slides = document.querySelectorAll(".mySlides");
-    const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
-    let currentApartment = "";
-    slides.forEach((slide, index) => {
-        if (slide.style.display === "block") {
-            currentApartment = apartmentNames[index];
-        }
-    });
-    return currentApartment;
-}
-
 // Populate the room table with room details
-function populateRoomTable(rooms) {
+async function populateRoomTable(rooms) {
     const tbody = document.getElementById('roomTable').querySelector('tbody');
     tbody.innerHTML = '';  // Clear existing table data
     rooms.forEach(room => {
@@ -203,6 +126,19 @@ function populateRoomTable(rooms) {
         tbody.appendChild(row);
     });
 }
+
+document.getElementById("roomsButton").addEventListener("click", async function () {
+    const apartment = getCurrentApartment();
+    const apartmentMap = {
+        "Matina Apartment": 1,
+        "Sesame Apartment": 2,
+        "Nabua Apartment": 3
+    };
+    const aptLocId = apartmentMap[apartment];
+    const response = await fetch(`/getFullRoomView/${aptLocId}`);
+    const rooms = await response.json();
+    populateRoomTable(rooms);
+});
 // End of fetch rooms based on the current apartment
 
 /**  ----------------------     END OF ROOMS SECTION    ----------------------     **/
@@ -327,7 +263,7 @@ async function removeTenant(event) {
 // End of Edit Tenant Details Function
 
 // Update Tenant Details
-document.getElementById("updateRoom").addEventListener("click", async () => {
+async function updateRoom(event) {
     const selectedRoomId = document.getElementById("roomSelect").value;
     const floor = document.getElementById("roomFloor").value;
     const tenants = document.getElementById("numTenants").value;
@@ -335,7 +271,7 @@ document.getElementById("updateRoom").addEventListener("click", async () => {
     const price = document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00";
     const status = document.getElementById("roomStatus").value;
 
-    // ✅ If any field is invalid, show a single error message
+    // If any field is invalid, show a single error message
     if (!selectedRoomId || !floor || floor < 0 || !tenants || tenants < 0 || !maxRenters || maxRenters < 1 || !price || price < 0 || !status) {
         alert("Please enter proper values.");
         return;
@@ -369,7 +305,7 @@ document.getElementById("updateRoom").addEventListener("click", async () => {
     } catch (error) {
         console.error("Error updating room:", error);
     }
-});
+}
 // End of Update Tenant Details Function
 
 // Setup Event Listeners -- para click sa modal, popup ang modal
@@ -391,6 +327,32 @@ document.addEventListener('DOMContentLoaded', () => {
     modalButtons.rooms.addEventListener('click', () => {
         openModal('roomsModal');
         updateRoomDropdown(getCurrentApartment()); // Ensure the dropdown updates
+
+         // Prevent invalid inputs
+        const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
+        const priceInput = document.getElementById("roomPrice");
+
+        // Prevent negative values for all number fields
+        numericInputs.forEach(id => {
+            const inputField = document.getElementById(id);
+            if (inputField) {
+                inputField.addEventListener("input", function () {
+                    if (this.value < 0) this.value = 0; // Ensure no negative values
+                });
+            }
+        });
+
+        // Ensure room price input allows only two decimal places & no negatives
+        if (priceInput) {
+            priceInput.addEventListener("input", function () {
+                if (this.value < 0) {
+                    this.value = "0.00";
+                } else {
+                    // Limit to two decimal places
+                    this.value = parseFloat(this.value).toFixed(2);
+                }
+            });
+        }
     });
   
     // Close Modal Buttons
@@ -411,6 +373,9 @@ addTenantForm.addEventListener('submit', addTenant);
 const removeTenantForm = document.getElementById('removeTenantForm');
 removeTenantForm.addEventListener('submit', removeTenant);
 
+const updateRoomForm = document.getElementById('updateRoomForm');
+updateRoomForm.addEventListener('submit', updateRoom);
+// End of Form Submissions
 
 
 // Check Rooms
