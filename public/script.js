@@ -364,13 +364,26 @@ document.addEventListener('DOMContentLoaded', () => {
       rooms: document.querySelector('.buttons button:nth-child(4)')
   };
 
-  // Event Listeners for Opening Modals
-  modalButtons.addTenant.addEventListener('click', () => openModal('addTenantModal'));
-  modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
-  modalButtons.rooms.addEventListener('click', () => {
-      openModal('roomsModal');
-      updateRoomDropdown(getCurrentApartment()); // Ensure the dropdown updates
-  });
+    // Event Listeners for Opening Modals
+    modalButtons.addTenant.addEventListener('click', () => openModal('addTenantModal'));
+    modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
+    modalButtons.rooms.addEventListener('click', async () => {
+        openModal('roomsModal');
+
+        const apartmentName = getCurrentApartment(); // Get apartment name
+        const apartmentIndex = getCurrentApartmentIndex(); // Get index (for getFullRoomView)
+
+        // Ensure apartmentMap is accessible || maguba if akong e gawas sa function
+        const apartmentMap = {
+            "Matina Apartment": 1,
+            "Sesame Apartment": 2,
+            "Nabua Apartment": 3
+        };
+
+        await getFullRoomView(apartmentIndex); // Populate table (Needs index)
+        await getAvailableRooms(apartmentMap[apartmentName]); // Populate dropdown (Needs Apt_Loc_ID)
+});
+
 
   // Close Modal Buttons
   const closeButtons = document.querySelectorAll('.close-button');
