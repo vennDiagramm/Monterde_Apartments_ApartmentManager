@@ -275,10 +275,25 @@ async function updateRoom(event) {
     const status = document.getElementById("roomStatus").value;
 
     // If any field is invalid, show a single error message
-    if (!selectedRoomId || !floor || floor < 0 || !tenants || tenants < 0 || !maxRenters || maxRenters < 1 || !price || price < 0 || !status) {
-        alert("Please enter proper values.");
-        return;
+    if (!selectedRoomId) {
+        alert("Room ID is required.");
+    } 
+    if (!floor || floor < 0) {
+        alert("Floor must be a non-negative number.");
+    } 
+    if (!tenants || tenants < 0) {
+        alert("Tenants must be a non-negative number.");
+    } 
+    if (!maxRenters || maxRenters < 1) {
+        alert("Max renters must be at least 1.");
+    } 
+    if (!price || price < 0) {
+        alert("Price must be a non-negative number.");
+    } 
+    if (!status) {
+        alert("Status is required.");
     }
+    
 
     // Gather validated values
     const updatedRoom = {
@@ -299,9 +314,16 @@ async function updateRoom(event) {
 
         if (response.ok) {
             alert("Room updated successfully!");
+            closeModal('roomsModal');
+            event.target.reset();
         } else {
             alert("Failed to update room.");
         }
+        
+        
+        
+        // Refresh rooms to update the display
+        fetchRooms();
     } catch (error) {
         console.error("Error updating room:", error);
     }
