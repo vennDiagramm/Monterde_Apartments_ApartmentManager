@@ -297,16 +297,16 @@ async function updateRoom(event) {
 
     // Gather validated values
     const updatedRoom = {
-        room_id: selectedRoomId,
         floor,
         tenants,
         max_renters: maxRenters,
         price,
-        status
+        status,
+        room_id: selectedRoomId
     };
 
     try {
-        const response = await fetch("/updateRoom", {
+        const response = await fetch("http://localhost:3000/updateRoom", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedRoom)
@@ -314,8 +314,8 @@ async function updateRoom(event) {
 
         if (response.ok) {
             alert("Room updated successfully!");
-            closeModal('roomsModal');
-            event.target.reset();
+            //closeModal('roomsModal');
+            //event.target.reset();
         } else {
             alert("Failed to update room.");
         }
