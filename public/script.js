@@ -108,103 +108,125 @@ document.getElementById("addTenantButton").addEventListener("click", function ()
 
 // Fetch Rooms (UPDATE ROOMS) && (VIEW ROOMS)
 // Edit Rooms
-window.addEventListener('DOMContentLoaded', function () {
-    // Open the rooms modal when the 'Rooms' button is clicked
-    document.getElementById('roomsButton').addEventListener('click', function () {
-        document.getElementById('roomsModal').style.display = 'block';
-        updateRoomTable(); // Ensure table updates based on the current apartment
+document.addEventListener("DOMContentLoaded", () => {
+    const roomsButton = document.getElementById("roomsButton");
+    const roomsModal = document.getElementById("roomsModal");
+    const closeButtons = document.querySelectorAll(".close-button");
+    const roomSelect = document.getElementById("roomSelect");
+    const roomTableBody = document.querySelector("#roomTable tbody");
+    const updateRoomButton = document.getElementById("updateRoom");
+
+    let roomsData = []; // Store fetched rooms data
+    let selectedApartment = 0; // Track current apartment index from slider
+
+    // Show the rooms modal when the button is clicked
+    roomsButton.addEventListener("click", async () => {
+        selectedApartment = getCurrentApartmentIndex(); // Get apartment index from slider
+        await getFullRoomView(selectedApartment); // Populate rooms for the selected apartment
+        await getAvailableRooms(selectedApartment); // Populate dropdown with available rooms
+        roomsModal.style.display = "block";
     });
 
-    // Close the modal when clicking the close button
-    document.querySelectorAll('.close-button').forEach(button => {
-        button.addEventListener('click', function () {
-            document.getElementById('roomsModal').style.display = 'none';
+    // Close modal when clicking the close button
+    closeButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            roomsModal.style.display = "none";
         });
     });
 
-    // Update Room - Prevent invalid inputs
-    const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
-    const priceInput = document.getElementById("roomPrice");
+    // VIEWING ROOMS (I need to have more comments so I can remember what this does)
+    // Fetch full room data for the selected apartment and update modal
+    async function getFullRoomView(apartmentIndex) {
+        try {
+            const response = await fetch(`/getFullRoomView/${apartmentIndex}`); // Use route parameter
+            const data = await response.json();
+            roomsData = data;
 
-    // Prevent negative values for all number fields
-    numericInputs.forEach(id => {
-        const inputField = document.getElementById(id);
-        if (inputField) {
-            inputField.addEventListener("input", function () {
-                if (this.value < 0) this.value = 0; // Ensure no negative values
-            });
+            // Populate room table
+            renderRoomTable();
+        } catch (error) {
+            console.error("Error fetching full room data:", error);
         }
-    });
+    }
 
-    // Ensure room price input allows only two decimal places & no negatives
-    if (priceInput) {
-        priceInput.addEventListener("input", function () {
-            if (this.value < 0) {
-                this.value = "0.00";
-            } else {
-                // Limit to two decimal places
-                this.value = parseFloat(this.value).toFixed(2);
-            }
+    // Fetch available rooms for dropdown selection
+    async function getAvailableRooms(apartmentIndex) {
+        try {
+            const response = await fetch(`/getRooms/${apartmentIndex}`); // Use route parameter
+            const data = await response.json();
+
+            // Populate dropdown with available rooms
+            roomSelect.innerHTML = '<option value="">Select a Room</option>';
+            data.forEach(room => {
+                const option = document.createElement("option");
+                option.value = room.Room_ID; // Ensure correct field name
+                option.textContent = `Room ${room.Room_ID}`;
+                roomSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error fetching available rooms:", error);
+        }
+    }
+
+    // Render the room table with the fetched data
+    function renderRoomTable() {
+        roomTableBody.innerHTML = ""; // Clear existing table data
+        roomsData.forEach(room => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${room.Room_ID}</td>
+                <td>${room.Room_floor}</td>
+                <td>${room.Number_of_Renters}</td>
+                <td>${room.Room_maxRenters}</td>
+                <td>${room.Room_Status_Desc}</td>
+            `;
+            roomTableBody.appendChild(row);
         });
     }
-    // Handle update room button click
-    document.getElementById("updateRoom").addEventListener("click", function () {
-        updateRoom();
-    });
-    // End of Update Room Function
-});
 
-// Fetch rooms based on the current apartment
-function updateRoomTable() {
-    const apartment = getCurrentApartment(); // Get the current apartment from the slider
-    if (!apartment) return;
+    // Handle room update functionality
+    updateRoomButton.addEventListener("click", async () => {
+        const selectedRoomId = roomSelect.value;
+        if (!selectedRoomId) {
+            alert("Please select a room to update.");
+            return;
+        }
 
-    // Map apartment names to Apt_Loc_ID
-    const apartmentMap = {
-        "Matina Apartment": 1,
-        "Sesame Apartment": 2,
-        "Nabua Apartment": 3
-    };
+        // Gather updated values
+        const updatedRoom = {
+            room_id: selectedRoomId,
+            floor: document.getElementById("roomFloor").value,
+            tenants: document.getElementById("numTenants").value,
+            max_renters: document.getElementById("maxRenters").value,
+            price: document.getElementById("roomPrice").value,
+            status: document.getElementById("roomStatus").value
+        };
 
-    const aptLocId = apartmentMap[apartment];
-    if (!aptLocId) return;
+        try {
+            const response = await fetch("/updateRoom", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedRoom)
+            });
 
-    fetch(`/getRooms/${aptLocId}`)
-        .then(response => response.json())
-        .then(data => populateRoomTable(data))
-        .catch(error => console.error("Error fetching rooms:", error));
-}
-
-// Get the current apartment name based on the image slider
-function getCurrentApartment() {
-    const slides = document.querySelectorAll(".mySlides");
-    const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
-    let currentApartment = "";
-    slides.forEach((slide, index) => {
-        if (slide.style.display === "block") {
-            currentApartment = apartmentNames[index];
+            if (response.ok) {
+                alert("Room updated successfully!");
+                await getFullRoomView(selectedApartment); // Refresh room data
+                await getAvailableRooms(selectedApartment); // Refresh dropdown data
+            } else {
+                alert("Failed to update room.");
+            }
+        } catch (error) {
+            console.error("Error updating room:", error);
         }
     });
-    return currentApartment;
-}
 
-// Populate the room table with room details
-function populateRoomTable(rooms) {
-    const tbody = document.getElementById('roomTable').querySelector('tbody');
-    tbody.innerHTML = '';
-    rooms.forEach(room => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${room.Room_ID}</td>
-            <td>${room.floor}</td>
-            <td>${room.tenants}</td>
-            <td>${room.maxRenters}</td>
-            <td>${room.price}</td>
-            <td>${room.status}</td>
-        `;
-        tbody.appendChild(row);
-    });
-}
+    // Retrieve the current apartment index based on the image slider position
+    function getCurrentApartmentIndex() {
+        const slides = document.querySelectorAll(".mySlides");
+        return Array.from(slides).findIndex(slide => slide.style.display === "block");
+    }
+});
 // End of fetch rooms based on the current apartment
 
 /**  ----------------------     END OF ROOMS SECTION    ----------------------     **/
