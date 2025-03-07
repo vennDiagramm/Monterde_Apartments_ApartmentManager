@@ -28,12 +28,23 @@ function getCurrentApartment() {
 /**  ----------------------     ROOMS SECTIONS    ----------------------     **/
 
 // Update room dropdown based on selected apartment (Now Global)
-function updateRoomDropdown(aptLocId) {
-    const roomDropdown = document.getElementById("roomSelect"); // Target Rooms Modal dropdown
+function updateRoomDropdown(apartment) {
+    const roomDropdown = document.getElementById("roomId");
     if (!roomDropdown) return;
-
-    roomDropdown.innerHTML = '<option value="">Select a Room</option>'; // Clear existing options
-
+    
+    roomDropdown.innerHTML = ""; // Clear existing options
+  
+    // Map apartments to their Apt_Loc_ID
+    const apartmentMap = {
+        "Matina Apartment": 1,
+        "Sesame Apartment": 2,
+        "Nabua Apartment": 3
+    };
+  
+    const aptLocId = apartmentMap[apartment];
+    if (!aptLocId) return;
+  
+    // Fetch available rooms from the database
     fetch(`/getRooms/${aptLocId}`)
         .then(response => response.json())
         .then(data => {
