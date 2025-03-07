@@ -62,6 +62,24 @@ app.get("/getFullRoomView/:aptLocId", async (req, res) => {
 });
 
 
+// UPDATE route below
+app.post("/updateRoom", async (req, res) => {
+    const { room_id, floor, tenants, max_renters, price, status } = req.body;
+    const sql = `
+        UPDATE room 
+        SET Room_floor = ?, Number_of_Renters = ?, Room_maxRenters = ?, 
+            Room_Status_ID = (SELECT Room_Status_ID FROM room_status WHERE Room_Status_Desc = ?)
+        WHERE Room_ID = ?`;
+
+    try {
+        await db.query(sql, [floor, tenants, max_renters, status, room_id]);
+        res.json({ message: "Room updated successfully!" });
+    } catch (err) {
+        console.error("Error updating room:", err);
+        res.status(500).json({ error: "Database update failed" });
+    }
+});
+
 
 // Add Tenant Route
 app.post('/add-person', async (req, res) => {

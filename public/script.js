@@ -28,41 +28,31 @@ function getCurrentApartment() {
 /**  ----------------------     ROOMS SECTIONS    ----------------------     **/
 
 // Update room dropdown based on selected apartment (Now Global)
-function updateRoomDropdown(apartment) {
-  const roomDropdown = document.getElementById("roomId");
-  if (!roomDropdown) return;
-  
-  roomDropdown.innerHTML = ""; // Clear existing options
+function updateRoomDropdown(aptLocId) {
+    const roomDropdown = document.getElementById("roomSelect"); // Target Rooms Modal dropdown
+    if (!roomDropdown) return;
 
-  // Map apartments to their Apt_Loc_ID
-  const apartmentMap = {
-      "Matina Apartment": 1,
-      "Sesame Apartment": 2,
-      "Nabua Apartment": 3
-  };
+    roomDropdown.innerHTML = '<option value="">Select a Room</option>'; // Clear existing options
 
-  const aptLocId = apartmentMap[apartment];
-  if (!aptLocId) return;
-
-  // Fetch available rooms from the database
-  fetch(`/getRooms/${aptLocId}`)
-      .then(response => response.json())
-      .then(data => {
-          if (data.length === 0) {
-              let option = document.createElement("option");
-              option.textContent = "No available rooms";
-              roomDropdown.appendChild(option);
-          } else {
-              data.forEach(room => {
-                  let option = document.createElement("option");
-                  option.value = room.Room_ID;
-                  option.textContent = `Room ${room.Room_ID}`;
-                  roomDropdown.appendChild(option);
-              });
-          }
-      })
-      .catch(error => console.error("Error fetching rooms:", error));
+    fetch(`/getRooms/${aptLocId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length === 0) {
+                let option = document.createElement("option");
+                option.textContent = "No available rooms";
+                roomDropdown.appendChild(option);
+            } else {
+                data.forEach(room => {
+                    let option = document.createElement("option");
+                    option.value = room.Room_ID;
+                    option.textContent = `Room ${room.Room_ID}`;
+                    roomDropdown.appendChild(option);
+                });
+            }
+        })
+        .catch(error => console.error("Error fetching rooms:", error));
 }
+// End of Update room dropdown based on selected apartment
 
 // Show by rooms
 document.addEventListener("DOMContentLoaded", function () {
@@ -106,127 +96,102 @@ document.getElementById("addTenantButton").addEventListener("click", function ()
 
 
 
-// Fetch Rooms (UPDATE ROOMS) && (VIEW ROOMS)
+// Fetch Rooms (UPDATE ROOMS) && (VIEW ROOMS) && (POST UPDATE)
 // Edit Rooms
-document.addEventListener("DOMContentLoaded", () => {
-    const roomsButton = document.getElementById("roomsButton");
-    const roomsModal = document.getElementById("roomsModal");
-    const closeButtons = document.querySelectorAll(".close-button");
-    const roomSelect = document.getElementById("roomSelect");
-    const roomTableBody = document.querySelector("#roomTable tbody");
-    const updateRoomButton = document.getElementById("updateRoom");
-
-    let roomsData = []; // Store fetched rooms data
-    let selectedApartment = 0; // Track current apartment index from slider
-
-    // Show the rooms modal when the button is clicked
-    roomsButton.addEventListener("click", async () => {
-        selectedApartment = getCurrentApartmentIndex(); // Get apartment index from slider
-        await getFullRoomView(selectedApartment); // Populate rooms for the selected apartment
-        await getAvailableRooms(selectedApartment); // Populate dropdown with available rooms
-        roomsModal.style.display = "block";
+window.addEventListener('DOMContentLoaded', function () {
+    // Open the rooms modal when the 'Rooms' button is clicked
+    document.getElementById('roomsButton').addEventListener('click', function () {
+        document.getElementById('roomsModal').style.display = 'block';
+        updateRoomTable(); // Ensure table updates based on the current apartment
     });
 
-    // Close modal when clicking the close button
-    closeButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            roomsModal.style.display = "none";
+    // Close the modal when clicking the close button
+    document.querySelectorAll('.close-button').forEach(button => {
+        button.addEventListener('click', function () {
+            document.getElementById('roomsModal').style.display = 'none';
         });
     });
 
-    // VIEWING ROOMS (I need to have more comments so I can remember what this does)
-    // Fetch full room data for the selected apartment and update modal
-    async function getFullRoomView(apartmentIndex) {
-        try {
-            const response = await fetch(`/getFullRoomView/${apartmentIndex}`); // Use route parameter
-            const data = await response.json();
-            roomsData = data;
+    // Update Room - Prevent invalid inputs
+    const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
+    const priceInput = document.getElementById("roomPrice");
 
-            // Populate room table
-            renderRoomTable();
-        } catch (error) {
-            console.error("Error fetching full room data:", error);
-        }
-    }
-
-    // Fetch available rooms for dropdown selection
-    async function getAvailableRooms(apartmentIndex) {
-        try {
-            const response = await fetch(`/getRooms/${apartmentIndex}`); // Use route parameter
-            const data = await response.json();
-
-            // Populate dropdown with available rooms
-            roomSelect.innerHTML = '<option value="">Select a Room</option>';
-            data.forEach(room => {
-                const option = document.createElement("option");
-                option.value = room.Room_ID; // Ensure correct field name
-                option.textContent = `Room ${room.Room_ID}`;
-                roomSelect.appendChild(option);
+    // Prevent negative values for all number fields
+    numericInputs.forEach(id => {
+        const inputField = document.getElementById(id);
+        if (inputField) {
+            inputField.addEventListener("input", function () {
+                if (this.value < 0) this.value = 0; // Ensure no negative values
             });
-        } catch (error) {
-            console.error("Error fetching available rooms:", error);
         }
-    }
+    });
 
-    // Render the room table with the fetched data
-    function renderRoomTable() {
-        roomTableBody.innerHTML = ""; // Clear existing table data
-        roomsData.forEach(room => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${room.Room_ID}</td>
-                <td>${room.Room_floor}</td>
-                <td>${room.Number_of_Renters}</td>
-                <td>${room.Room_maxRenters}</td>
-                <td>${room.Room_Status_Desc}</td>
-            `;
-            roomTableBody.appendChild(row);
-        });
-    }
-
-    // Handle room update functionality
-    updateRoomButton.addEventListener("click", async () => {
-        const selectedRoomId = roomSelect.value;
-        if (!selectedRoomId) {
-            alert("Please select a room to update.");
-            return;
-        }
-
-        // Gather updated values
-        const updatedRoom = {
-            room_id: selectedRoomId,
-            floor: document.getElementById("roomFloor").value,
-            tenants: document.getElementById("numTenants").value,
-            max_renters: document.getElementById("maxRenters").value,
-            price: document.getElementById("roomPrice").value,
-            status: document.getElementById("roomStatus").value
-        };
-
-        try {
-            const response = await fetch("/updateRoom", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedRoom)
-            });
-
-            if (response.ok) {
-                alert("Room updated successfully!");
-                await getFullRoomView(selectedApartment); // Refresh room data
-                await getAvailableRooms(selectedApartment); // Refresh dropdown data
+    // Ensure room price input allows only two decimal places & no negatives
+    if (priceInput) {
+        priceInput.addEventListener("input", function () {
+            if (this.value < 0) {
+                this.value = "0.00";
             } else {
-                alert("Failed to update room.");
+                // Limit to two decimal places
+                this.value = parseFloat(this.value).toFixed(2);
             }
-        } catch (error) {
-            console.error("Error updating room:", error);
+        });
+    }
+
+    // Handle update room button click
+    document.getElementById("updateRoom").addEventListener("click", function () {
+        updateRoom();
+    });
+    // End of Update Room Function
+});
+
+// Fetch rooms based on the current apartment
+document.getElementById('roomsButton').addEventListener('click', async function () {
+    document.getElementById('roomsModal').style.display = 'block';
+
+    const apartment = getCurrentApartment(); // Get the apartment name
+    const apartmentMap = {
+        "Matina Apartment": 1,
+        "Sesame Apartment": 2,
+        "Nabua Apartment": 3
+    };
+    const aptLocId = apartmentMap[apartment];
+    if (!aptLocId) return;
+
+    await updateRoomTable(); // Populate table
+    await updateRoomDropdown(aptLocId); // Populate dropdown
+});
+
+
+// Get the current apartment name based on the image slider
+function getCurrentApartment() {
+    const slides = document.querySelectorAll(".mySlides");
+    const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
+    let currentApartment = "";
+    slides.forEach((slide, index) => {
+        if (slide.style.display === "block") {
+            currentApartment = apartmentNames[index];
         }
     });
+    return currentApartment;
+}
 
-    // Retrieve the current apartment index based on the image slider position
-    function getCurrentApartmentIndex() {
-        const slides = document.querySelectorAll(".mySlides");
-        return Array.from(slides).findIndex(slide => slide.style.display === "block");
-    }
-});
+// Populate the room table with room details
+function populateRoomTable(rooms) {
+    const tbody = document.getElementById('roomTable').querySelector('tbody');
+    tbody.innerHTML = '';  // Clear existing table data
+    rooms.forEach(room => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${room.Room_ID}</td>
+            <td>${room.Room_floor}</td>
+            <td>${room.Number_of_Renters}</td>
+            <td>${room.Room_maxRenters}</td>
+            <td>${room.Room_Status_Desc}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
 // End of fetch rooms based on the current apartment
 
 /**  ----------------------     END OF ROOMS SECTION    ----------------------     **/
@@ -350,51 +315,83 @@ async function removeTenant(event) {
 
 // End of Edit Tenant Details Function
 
+// Update Tenant Details
+document.getElementById("updateRoom").addEventListener("click", async () => {
+    const selectedRoomId = document.getElementById("roomSelect").value;
+    const floor = document.getElementById("roomFloor").value;
+    const tenants = document.getElementById("numTenants").value;
+    const maxRenters = document.getElementById("maxRenters").value;
+    const price = document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00";
+    const status = document.getElementById("roomStatus").value;
+
+    // ✅ If any field is invalid, show a single error message
+    if (!selectedRoomId || !floor || floor < 0 || !tenants || tenants < 0 || !maxRenters || maxRenters < 1 || !price || price < 0 || !status) {
+        alert("Please enter proper values.");
+        return;
+    }
+
+    // Gather validated values
+    const updatedRoom = {
+        room_id: selectedRoomId,
+        floor,
+        tenants,
+        max_renters: maxRenters,
+        price,
+        status
+    };
+
+    try {
+        const response = await fetch("/updateRoom", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedRoom)
+        });
+
+        if (response.ok) {
+            alert("Room updated successfully!");
+            const aptLocId = getCurrentApartmentId(); // Get correct apartment ID
+            await updateRoomTable(); // Refresh room table
+            await updateRoomDropdown(aptLocId); // Refresh dropdown
+        } else {
+            alert("Failed to update room.");
+        }
+    } catch (error) {
+        console.error("Error updating room:", error);
+    }
+});
+// End of Update Tenant Details Function
 
 // Setup Event Listeners -- para click sa modal, popup ang modal
 document.addEventListener('DOMContentLoaded', () => {
-  // Hide all modals when page loads
-  const modals = document.querySelectorAll('.modal');
-  modals.forEach(modal => modal.style.display = 'none');
-
-  // Modal Buttons
-  const modalButtons = {
-      addTenant: document.querySelector('.buttons button:nth-child(1)'),
-      removeTenant: document.querySelector('.buttons button:nth-child(2)'),
-      rooms: document.querySelector('.buttons button:nth-child(4)')
-  };
-
+    // Hide all modals when page loads
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => modal.style.display = 'none');
+  
+    // Modal Buttons
+    const modalButtons = {
+        addTenant: document.querySelector('.buttons button:nth-child(1)'),
+        removeTenant: document.querySelector('.buttons button:nth-child(2)'),
+        rooms: document.querySelector('.buttons button:nth-child(4)')
+    };
+  
     // Event Listeners for Opening Modals
     modalButtons.addTenant.addEventListener('click', () => openModal('addTenantModal'));
     modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
-    modalButtons.rooms.addEventListener('click', async () => {
+    modalButtons.rooms.addEventListener('click', () => {
         openModal('roomsModal');
-
-        const apartmentName = getCurrentApartment(); // Get apartment name
-        const apartmentIndex = getCurrentApartmentIndex(); // Get index (for getFullRoomView)
-
-        // Ensure apartmentMap is accessible || maguba if akong e gawas sa function
-        const apartmentMap = {
-            "Matina Apartment": 1,
-            "Sesame Apartment": 2,
-            "Nabua Apartment": 3
-        };
-
-        await getFullRoomView(apartmentIndex); // Populate table (Needs index)
-        await getAvailableRooms(apartmentMap[apartmentName]); // Populate dropdown (Needs Apt_Loc_ID)
-});
-
-
-  // Close Modal Buttons
-  const closeButtons = document.querySelectorAll('.close-button');
-  closeButtons.forEach(button => {
-      button.addEventListener('click', (e) => {
-          const modalId = e.target.closest('.modal').id;
-          closeModal(modalId);
-      });
+        updateRoomDropdown(getCurrentApartment()); // Ensure the dropdown updates
+    });
+  
+    // Close Modal Buttons
+    const closeButtons = document.querySelectorAll('.close-button');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const modalId = e.target.closest('.modal').id;
+            closeModal(modalId);
+        });
+    });
   });
-});
-// End of Setup Event Listeners
+  // End of Setup Event Listeners
 
 // Form Submissions
 const addTenantForm = document.getElementById('addTenantForm');
