@@ -68,11 +68,13 @@ app.post("/updateRoom", async (req, res) => {
     const sql = `
         UPDATE room 
         SET Room_floor = ?, Number_of_Renters = ?, Room_maxRenters = ?, 
-            Room_Status_ID = (SELECT Room_Status_ID FROM room_status WHERE Room_Status_Desc = ?)
+            Room_Status_ID = (SELECT Room_Status_ID FROM room_status WHERE Room_Status_Desc = ?),
+            Room_Price = ?
         WHERE Room_ID = ?`;
 
+
     try {
-        await db.query(sql, [floor, tenants, max_renters, status, room_id]);
+        await db.query(sql, [floor, tenants, max_renters, status, price, room_id]);
         res.json({ message: "Room updated successfully!" });
     } catch (err) {
         console.error("Error updating room:", err);

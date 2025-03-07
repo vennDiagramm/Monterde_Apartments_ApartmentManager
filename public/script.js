@@ -29,7 +29,7 @@ function getCurrentApartment() {
 
 // Update room dropdown based on selected apartment (Now Global)
 function updateRoomDropdown(apartment) {
-    const roomDropdown = document.getElementById("roomId");
+    const roomDropdowns = document.querySelectorAll("#roomId"); // multiple
     if (!roomDropdown) return;
     
     roomDropdown.innerHTML = ""; // Clear existing options
@@ -297,9 +297,6 @@ async function updateRoom(event) {
 
         if (response.ok) {
             alert("Room updated successfully!");
-            const aptLocId = getCurrentApartmentId(); // Get correct apartment ID
-            await updateRoomTable(); // Refresh room table
-            await updateRoomDropdown(aptLocId); // Refresh dropdown
         } else {
             alert("Failed to update room.");
         }
@@ -327,7 +324,6 @@ document.addEventListener('DOMContentLoaded', () => {
     modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
     modalButtons.rooms.addEventListener('click', () => {
         openModal('roomsModal');
-        updateRoomDropdown(getCurrentApartment()); // Ensure the dropdown updates
 
          // Prevent invalid inputs
         const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
