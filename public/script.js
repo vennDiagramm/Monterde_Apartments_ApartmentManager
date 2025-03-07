@@ -320,8 +320,8 @@ async function updateRoom(event) {
         floor,
         tenants,
         max_renters: maxRenters,
-        price,
         status,
+        price,
         room_id: selectedRoomId
     };
 
