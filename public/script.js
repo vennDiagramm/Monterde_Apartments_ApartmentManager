@@ -169,7 +169,7 @@ function updateRoomTable() {
     const aptLocId = apartmentMap[apartment];
     if (!aptLocId) return;
 
-    fetch(`/getFullRoomView/${aptLocId}`)
+    fetch(`/getRooms/${aptLocId}`)
         .then(response => response.json())
         .then(data => populateRoomTable(data))
         .catch(error => console.error("Error fetching rooms:", error));
