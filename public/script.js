@@ -1,16 +1,16 @@
 // Modal Utility Functions
-async function openModal(modalId) {
+function openModal(modalId) {
   const modal = document.getElementById(modalId);
   modal.style.display = "block";
 }
 
-async function closeModal(modalId) {
+function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   modal.style.display = "none";
 }
 
 // Get rooms by aptLocId
-async function getCurrentApartment() {
+function getCurrentApartment() {
     const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
     const slides = document.querySelectorAll(".mySlides");
     let currentApartment = "";
@@ -28,7 +28,7 @@ async function getCurrentApartment() {
 /**  ----------------------     ROOMS SECTIONS    ----------------------     **/
 
 // Update room dropdown based on selected apartment (Now Global)
-async function updateRoomDropdown(apartment) {
+function updateRoomDropdown(apartment) {
     const roomDropdown = document.getElementById("roomId");
     if (!roomDropdown) return;
     
