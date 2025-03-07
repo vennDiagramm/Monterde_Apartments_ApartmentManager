@@ -103,6 +103,10 @@ document.addEventListener("DOMContentLoaded", function () {
 document.getElementById("addTenantButton").addEventListener("click", function () {
   updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
 });
+
+document.getElementById("roomsButton").addEventListener("click", function () {
+    updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
+  });
 // End of Update  Rooms available in the dropdown
 
 
@@ -124,8 +128,6 @@ async function populateRoomTable(rooms) {
 }
 
 document.getElementById("roomsButton").addEventListener("click", async function () {
-    updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
-
     const apartment = getCurrentApartment();
     const apartmentMap = {
         "Matina Apartment": 1,
