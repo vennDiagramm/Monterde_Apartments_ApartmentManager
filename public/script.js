@@ -169,7 +169,7 @@ async function addTenant(event) {
       let apartmentLocation = getCurrentApartment();
 
       // Room ID (sen)
-      const roomId = document.getElementById('roomId').value;
+      const roomId = document.getElementsByClassName('roomId').value;
 
       // Validate inputs
       if (!firstName || !lastName || !contact || !dob || !sex || 
@@ -267,7 +267,7 @@ async function removeTenant(event) {
 // Update Tenant Details
 async function updateRoom(event) {
     event.preventDefault();
-    const selectedRoomId = document.getElementById("roomSelect").value;
+    const selectedRoomId = document.getElementsByClassName('roomId').value;
     const floor = document.getElementById("roomFloor").value;
     const tenants = document.getElementById("numTenants").value;
     const maxRenters = document.getElementById("maxRenters").value;
