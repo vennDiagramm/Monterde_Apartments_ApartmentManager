@@ -102,38 +102,82 @@ document.addEventListener("DOMContentLoaded", function () {
 document.getElementById("addTenantButton").addEventListener("click", function () {
   updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
 });
-// End of Update Rooms available 
+// End of Update  Rooms available in the dropdown
 
 
 
-// Update Room 
-document.addEventListener("DOMContentLoaded", function () {
-  const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
-  const priceInput = document.getElementById("roomPrice");
+// Fetch Rooms (VIEW ROOMS) && (UPDATE ROOMS)
+// Edit Rooms
+window.addEventListener('DOMContentLoaded', function () {
+    fetchRooms(); // Load rooms when the page loads
 
-  // Prevent negative values for all number fields
-  numericInputs.forEach(id => {
-      const inputField = document.getElementById(id);
-      if (inputField) {
-          inputField.addEventListener("input", function () {
-              if (this.value < 0) this.value = 0; // Ensure no negative values
-          });
-      }
-  });
+    document.getElementById('roomsButton').addEventListener('click', function () {
+        document.getElementById('roomsModal').style.display = 'block';
+    });
 
-  // Room Price: Allow only two decimal places & prevent negatives
-  if (priceInput) {
-      priceInput.addEventListener("input", function () {
-          if (this.value < 0) {
-              this.value = "0.00";
-          } else {
-              // Ensure only two decimal places
-              this.value = parseFloat(this.value).toFixed(2);
-          }
-      });
-  }
+    document.querySelectorAll('.close-button').forEach(button => {
+        button.addEventListener('click', function () {
+            document.getElementById('roomsModal').style.display = 'none';
+        });
+    });
+
+    // Update Room - Update the details of a room
+    const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
+    const priceInput = document.getElementById("roomPrice");
+
+    // Prevent negative values for all number fields
+    numericInputs.forEach(id => {
+        const inputField = document.getElementById(id);
+        if (inputField) {
+            inputField.addEventListener("input", function () {
+                if (this.value < 0) this.value = 0; // Ensure no negative values
+            });
+        }
+    });
+
+    // Room Price: Allow only two decimal places & prevent negatives
+    if (priceInput) {
+        priceInput.addEventListener("input", function () {
+            if (this.value < 0) {
+                this.value = "0.00";
+            } else {
+                // Ensure only two decimal places
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+        });
+    }
+    // End of Update Room - Update the details of a room
 });
-// End of Update Room Function
+// End of Edit Rooms
+
+// Viewing Rooms (ALL VIEW ROOMS FUNCTIONS)
+function fetchRooms() {
+    fetch('/api/rooms')
+        .then(response => response.json())
+        .then(data => {
+            populateRoomTable(data); // Populate table with room details
+        })
+        .catch(error => console.error('Error fetching rooms:', error));
+}
+
+// Populate the room table with room details
+function populateRoomTable(rooms) {
+    const tbody = document.getElementById('roomTable').querySelector('tbody');
+    tbody.innerHTML = '';
+    rooms.forEach(room => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${room.id}</td>
+            <td>${room.floor}</td>
+            <td>${room.tenants}</td>
+            <td>${room.maxRenters}</td>
+            <td>${room.price}</td>
+            <td>${room.status}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+// End of all VIEW ROOMS FUNCTIONS
 
 /**  ----------------------     END OF ROOMS SECTION    ----------------------     **/
 
