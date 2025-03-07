@@ -212,44 +212,44 @@ async function addTenant(event) {
 
 // Remove a Tenant
 async function removeTenant(event) {
-  event.preventDefault();
-  try {
-      const personId = document.getElementById('personId').value;
-      
-      if (!personId) {
-          alert("Please enter a valid Person ID!");
-          return;
-      }
-
-      // Confirm removal
-      const confirmRemoval = confirm("Are you sure you want to remove this tenant?");
-      if (!confirmRemoval) {
-          return;
-      }
-
-      // Send remove request to backend
-      const response = await fetch(`http://localhost:3000/remove-tenant/${personId}`, {
-          method: 'DELETE'
-      });
-
-      if (!response.ok) {
-          throw new Error('Failed to remove tenant');
-      }
-
-      alert('Tenant removed successfully!');
-      
-      // Close modal and reset form
-      closeModal('removeTenantModal');
-      event.target.reset();
-      
-      // Refresh rooms to update the display
-      fetchRooms();
-  } catch (error) {
-      console.error("Error removing tenant:", error);
-      alert("Failed to remove tenant. " + error.message);
+    event.preventDefault();
+    try {
+        const personId = document.getElementById('personId').value;
+        
+        if (!personId) {
+            alert("Please enter a valid Person ID!");
+            return;
+        }
+  
+        // Confirm removal
+        const confirmRemoval = confirm("Are you sure you want to remove this tenant?");
+        if (!confirmRemoval) {
+            return;
+        }
+  
+        // Send remove request to backend
+        const response = await fetch(`http://localhost:3000/remove-tenant/${personId}`, {
+            method: 'DELETE'
+        });
+  
+        if (!response.ok) {
+            throw new Error('Failed to remove tenant');
+        }
+  
+        alert('Tenant removed successfully!');
+        
+        // Close modal and reset form
+        closeModal('removeTenantModal');
+        event.target.reset();
+        
+        // Refresh rooms to update the display
+        fetchRooms();
+    } catch (error) {
+        console.error("Error removing tenant:", error);
+        alert("Failed to remove tenant. " + error.message);
+    }
   }
-}
-// End of Remove a Tenant Function
+  // End of Remove a Tenant Function
 
 
 // Edit Tenant Details
