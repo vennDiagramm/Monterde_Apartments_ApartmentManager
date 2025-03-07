@@ -276,15 +276,8 @@ async function updateRoom(event) {
     const tenants = document.getElementById("numTenants").value;
     const maxRenters = document.getElementById("maxRenters").value;
     const price = document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00";
-    const statusMap = {
-        "Vacant": 1,
-        "Occupied": 2,
-        "Maintenance": 3,
-        "Reserved": 4,
-        "Unavailable": 5
-    };
-    const status = statusMap[document.getElementById("roomStatus").value] || null;
-    
+    const status = parseInt(document.getElementById("roomStatus").value, 10);
+
     console.log("Selected status:", status); // Debugging log
 
     // If any field is invalid, show a single error message
