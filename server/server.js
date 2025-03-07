@@ -198,7 +198,6 @@ app.delete('/remove-tenant/:personId', async (req, res) => {
     }
 });
 
-
 // 🔹 Start the Server
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
