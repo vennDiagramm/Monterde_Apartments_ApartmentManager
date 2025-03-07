@@ -46,7 +46,7 @@ app.get("/getRooms/:aptLocId", async (req, res) => {
 // Get Full View of Room via aptLocId
 app.get("/getFullRoomView/:aptLocId", async (req, res) => {
     const aptLocId = req.params.aptLocId;
-    const sql = `SELECT r.Room_ID, r.Room_floor, r.Number_of_Renters, r.Room_maxRenters, 
+    const sql = `SELECT r.Room_ID, r.Room_floor, r.Number_of_Renters, r.Room_maxRenters, r.Room_Price,
                 rs.Room_Status_Desc
                 FROM room r
                 JOIN room_status rs ON r.Room_Status_ID = rs.Room_Status_ID

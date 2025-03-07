@@ -315,6 +315,8 @@ async function updateRoom(event) {
         status = 5;
     }
 
+    status = Number(status);
+
     // Gather validated values
     const updatedRoom = {
         floor,
