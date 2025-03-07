@@ -9,6 +9,7 @@ const port = process.env.PORT || 3000; // Default to port 3000 if not set in .en
 
 app.use(cors()); // Allows frontend to talk to backend
 app.use(express.json()); // Enables JSON parsing
+app.use(express.static('public')); // Serve static files from the public folder
 
 // Serve home.html directly from the root (one level up from the 'server' folder)
 app.get('/', (req, res) => {
