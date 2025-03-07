@@ -157,7 +157,7 @@ async function addTenant(event) {
       const street = document.getElementById('street').value;
 
       // Get the active apartment location
-      let apartmentLocation = getActiveApartment();
+      let apartmentLocation = getCurrentApartment();
 
       // Room ID (sen)
       const roomId = document.getElementById('roomId').value;
