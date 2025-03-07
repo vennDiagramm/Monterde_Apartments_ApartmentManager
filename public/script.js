@@ -147,6 +147,10 @@ window.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
+    // Handle update room button click
+    document.getElementById("updateRoom").addEventListener("click", function () {
+        updateRoom();
+    });
     // End of Update Room Function
 });
 
@@ -165,7 +169,7 @@ function updateRoomTable() {
     const aptLocId = apartmentMap[apartment];
     if (!aptLocId) return;
 
-    fetch(`/getRooms/${aptLocId}`)
+    fetch(`/getFullRoomView/${aptLocId}`)
         .then(response => response.json())
         .then(data => populateRoomTable(data))
         .catch(error => console.error("Error fetching rooms:", error));

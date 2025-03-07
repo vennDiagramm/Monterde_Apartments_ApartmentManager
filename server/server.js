@@ -43,6 +43,23 @@ app.get("/getRooms/:aptLocId", async (req, res) => {
 });
 // End of Get rooms by aptLocId
 
+// Get Full View of Room via aptLocId
+app.get("/getFullRoomView/:aptLocId", async (req, res) => {
+    const aptLocId = req.params.aptLocId;
+    const sql = `SELECT r.Room_ID, r.Room_floor, r.Number_of_Renters, r.Room_maxRenters, 
+                rs.Room_Status_Desc
+                FROM room r
+                JOIN room_status rs ON r.Room_Status_ID = rs.Room_Status_ID
+                WHERE r.Apt_Loc_ID = ?`;
+
+    try {
+        const [results] = await db.query(sql, [aptLocId]);
+        res.json(results);
+    } catch (err) {
+        console.error("Error fetching rooms:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
 
 
 
