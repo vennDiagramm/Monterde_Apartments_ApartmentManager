@@ -65,20 +65,6 @@ function updateRoomDropdown(apartment) {
 
 // Show by rooms
 document.addEventListener("DOMContentLoaded", function () {
-  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
-
-  // Get the current apartment name
-  function getCurrentApartment() {
-      const slides = document.querySelectorAll(".mySlides");
-      let currentApartment = "";
-      slides.forEach((slide, index) => {
-          if (slide.style.display === "block") {
-              currentApartment = apartmentNames[index];
-          }
-      });
-      return currentApartment;
-  }
-
   // Event Listeners
   document.querySelector(".next").addEventListener("click", () => {
       setTimeout(() => {
