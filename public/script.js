@@ -278,6 +278,7 @@ async function updateRoom(event) {
     const price = document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00";
     const status = document.getElementById("roomStatus").value;
 
+    console.log("Selected status:", status); // Debugging log
     // If any field is invalid, show a single error message
     if (!selectedRoomId) {
         alert("Room ID is required.");
@@ -298,6 +299,17 @@ async function updateRoom(event) {
         alert("Status is required.");
     }
     
+    if(status === "Vacant"){
+        status = 1;
+    } else if(status === "Occupied"){
+        status = 2;
+    } else if(status === "Maintenance"){
+        status = 3;
+    } else if(status === "Reserved"){
+        status = 4;
+    } else if(status === "Unavailable"){
+        status = 5;
+    }
 
     // Gather validated values
     const updatedRoom = {
