@@ -266,16 +266,16 @@ async function removeTenant(event) {
 
 // End of Edit Tenant Details Function
 
-// Update Tenant Details
+// Update Room Details
 async function updateRoom(event) {
     event.preventDefault();
     // IF IN the rooms modal
     const roomsModal = document.getElementById('roomsModal');
     const selectedRoomId = roomsModal.querySelector('.roomId').value;
-    const floor = document.getElementById("roomFloor").value;
-    const tenants = document.getElementById("numTenants").value;
-    const maxRenters = document.getElementById("maxRenters").value;
-    const price = document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00";
+    const floor = parseInt(document.getElementById("roomFloor").value, 10);
+    const tenants = parseInt(document.getElementById("numTenants").value, 10);
+    const maxRenters = parseInt(document.getElementById("maxRenters").value, 10);
+    const price = parseFloat(document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00");
     const status = parseInt(document.getElementById("roomStatus").value, 10);
 
     console.log("Selected status:", status); // Debugging log
@@ -283,21 +283,27 @@ async function updateRoom(event) {
     // If any field is invalid, show a single error message
     if (!selectedRoomId) {
         alert("Room ID is required.");
-    } 
-    if (!floor || floor < 0) {
+        return;
+    }
+    if (isNaN(floor) || floor < 0) {
         alert("Floor must be a non-negative number.");
-    } 
-    if (!tenants || tenants < 0) {
+        return;
+    }
+    if (isNaN(tenants) || tenants < 0) {
         alert("Tenants must be a non-negative number.");
-    } 
-    if (!maxRenters || maxRenters < 1) {
+        return;
+    }
+    if (isNaN(maxRenters) || maxRenters < 1) {
         alert("Max renters must be at least 1.");
-    } 
-    if (!price || price < 0) {
+        return;
+    }
+    if (isNaN(price) || price < 0) {
         alert("Price must be a non-negative number.");
-    } 
-    if (!status) {
+        return;
+    }
+    if (isNaN(status)) {
         alert("Status is required.");
+        return;
     }
 
     // Gather validated values
@@ -319,21 +325,19 @@ async function updateRoom(event) {
 
         if (response.ok) {
             alert("Room updated successfully!");
-            //closeModal('roomsModal');
-            //event.target.reset();
+            // closeModal('roomsModal');
+            // event.target.reset();
         } else {
             alert("Failed to update room.");
         }
-        
-        
-        
+
         // Refresh rooms to update the display
         fetchRooms();
     } catch (error) {
         console.error("Error updating room:", error);
     }
 }
-// End of Update Tenant Details Function
+// End of Update Room Details Function
 
 // Setup Event Listeners -- para click sa modal, popup ang modal
 document.addEventListener('DOMContentLoaded', () => {
