@@ -1,10 +1,14 @@
-const mysql = require('mysql2');
+require('dotenv').config(); // Load environment variables from .env file
+const mysql = require("mysql2");
 
+// Create the connection pool using the DATABASE_URL from .env
 const pool = mysql.createPool({
-    host: 'localhost', // or your MySQL server IP
-    user: 'root', // or another MySQL user
-    password: '',
-    database: 'db_gmd_dormitoryManager', // change on what name is your database
+    // Using individual connection parameters instead of uri
+    host: process.env.DB_HOST || 'shuttle.proxy.rlwy.net',
+    port: process.env.DB_PORT || '17717',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || 'qHKhdTwVXrxzbrBKaStayQeCASakRwEA',
+    database: process.env.DB_NAME || 'railway',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -21,4 +25,3 @@ pool.on('error', (err) => {
 
 // Use pool.promise() for async queries
 module.exports = pool.promise();
-

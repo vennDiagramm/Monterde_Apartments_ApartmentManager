@@ -1,12 +1,19 @@
-/** DITO E LAGAY YUNG THING*/
+require('dotenv').config(); // Ensure dotenv is loaded first
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const db = require('./db'); // Database connection
 
 const app = express();
+const port = process.env.PORT || 3000; // Default to port 3000 if not set in .env
+
 app.use(cors()); // Allows frontend to talk to backend
 app.use(express.json()); // Enables JSON parsing
-app.use(express.static('public')); // Serves static files (HTML, script.js)
+
+// Serve home.html directly from the root (one level up from the 'server' folder)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'home.html')); // Go up one level from 'server'
+});
 
 // Get Room List
 app.get('/rooms', async (req, res) => {
@@ -19,20 +26,20 @@ app.get('/rooms', async (req, res) => {
     }
 });
 
-// Get rooms by aptLocId
-app.get("/getRooms/:aptLocId", (req, res) => {
-    const aptLocId = req.params.aptLocId;
-    const sql = "SELECT Room_ID FROM room WHERE Apt_Loc_ID = ? AND Room_Status_ID = 1";
 
-    db.query(sql, [aptLocId], (err, results) => {
-        if (err) {
-            console.error("Error fetching rooms:", err);
-            res.status(500).json({ error: "Database error" });
-        } else {
-            res.json(results);
+
+// Get rooms by aptLocId
+function getCurrentApartment() {
+    const slides = document.querySelectorAll(".mySlides");
+    let currentApartment = "";
+    slides.forEach((slide, index) => {
+        if (slide.style.display === "block") {
+            currentApartment = apartmentNames[index];
         }
     });
-});
+    console.log("Current apartment:", currentApartment); // Debugging log
+    return currentApartment;
+}
 // End of Get rooms by aptLocId
 
 
@@ -222,6 +229,6 @@ app.delete('/remove-tenant/:personId', async (req, res) => {
 
 
 // 🔹 Start the Server
-app.listen(3000, () => {
-    console.log('Server running at http://localhost:3000');
+app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
 });
