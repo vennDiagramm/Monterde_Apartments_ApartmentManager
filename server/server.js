@@ -28,19 +28,19 @@ app.get('/rooms', async (req, res) => {
 });
 
 
-
 // Get rooms by aptLocId
-function getCurrentApartment() {
-    const slides = document.querySelectorAll(".mySlides");
-    let currentApartment = "";
-    slides.forEach((slide, index) => {
-        if (slide.style.display === "block") {
-            currentApartment = apartmentNames[index];
-        }
-    });
-    console.log("Current apartment:", currentApartment); // Debugging log
-    return currentApartment;
-}
+app.get("/getRooms/:aptLocId", async (req, res) => {
+    const aptLocId = req.params.aptLocId;
+    const sql = "SELECT Room_ID FROM room WHERE Apt_Loc_ID = ? AND Room_Status_ID = 1";
+
+    try {
+        const [results] = await db.query(sql, [aptLocId]);
+        res.json(results);
+    } catch (err) {
+        console.error("Error fetching rooms:", err);
+        res.status(500).json({ error: "Database error" });
+    }
+});
 // End of Get rooms by aptLocId
 
 

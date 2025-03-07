@@ -9,19 +9,17 @@ function closeModal(modalId) {
   modal.style.display = "none";
 }
 
-// Function to get the active apartment name
+// Get rooms by aptLocId
 function getCurrentApartment() {
-  const slides = document.querySelectorAll(".mySlides");
-  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
-  let activeIndex = -1;
-
-  slides.forEach((slide, index) => {
-      if (slide.classList.contains("active")) {
-          activeIndex = index;
-      }
-  });
-
-  return activeIndex !== -1 ? apartmentNames[activeIndex] : null;
+    const slides = document.querySelectorAll(".mySlides");
+    let currentApartment = "";
+    slides.forEach((slide, index) => {
+        if (slide.style.display === "block") {
+            currentApartment = apartmentNames[index];
+        }
+    });
+    console.log("Current apartment:", currentApartment); // Debugging log
+    return currentApartment;
 }
 // End of Function to get the active apartment name
 
