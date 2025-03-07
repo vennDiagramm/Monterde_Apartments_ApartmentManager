@@ -279,6 +279,10 @@ async function updateRoom(event) {
     const status = document.getElementById("roomStatus").value;
 
     console.log("Selected status:", status); // Debugging log
+
+    // Ensure status is a number
+    status = parseInt(status, 10);  
+    
     // If any field is invalid, show a single error message
     if (!selectedRoomId) {
         alert("Room ID is required.");
