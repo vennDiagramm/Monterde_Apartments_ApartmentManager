@@ -29,7 +29,7 @@ function getCurrentApartment() {
 
 // Update room dropdown based on selected apartment (Now Global)
 function updateRoomDropdown(apartment) {
-    const roomDropdowns = document.querySelectorAll("#roomId"); // multiple
+    const roomDropdown = document.querySelectorAll("#roomId"); // multiple
     if (!roomDropdown) return;
     
     roomDropdown.innerHTML = ""; // Clear existing options
