@@ -123,6 +123,7 @@ async function populateRoomTable(rooms) {
             <td>${room.Room_floor}</td>
             <td>${room.Number_of_Renters}</td>
             <td>${room.Room_maxRenters}</td>
+            <td>₱${room.Room_Price.toLocaleString()}</td>
             <td>${room.Room_Status_Desc}</td>
         `;
         tbody.appendChild(row);
