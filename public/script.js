@@ -276,12 +276,16 @@ async function updateRoom(event) {
     const tenants = document.getElementById("numTenants").value;
     const maxRenters = document.getElementById("maxRenters").value;
     const price = document.getElementById("roomPrice") ? document.getElementById("roomPrice").value : "0.00";
-    const status = document.getElementById("roomStatus").value;
-
+    const statusMap = {
+        "Vacant": 1,
+        "Occupied": 2,
+        "Maintenance": 3,
+        "Reserved": 4,
+        "Unavailable": 5
+    };
+    const status = statusMap[document.getElementById("roomStatus").value] || null;
+    
     console.log("Selected status:", status); // Debugging log
-
-    // Ensure status is a number
-    //status = parseInt(status, 10);  
 
     // If any field is invalid, show a single error message
     if (!selectedRoomId) {
@@ -302,20 +306,6 @@ async function updateRoom(event) {
     if (!status) {
         alert("Status is required.");
     }
-    
-    if(status === "Vacant"){
-        status = 1;
-    } else if(status === "Occupied"){
-        status = 2;
-    } else if(status === "Maintenance"){
-        status = 3;
-    } else if(status === "Reserved"){
-        status = 4;
-    } else if(status === "Unavailable"){
-        status = 5;
-    }
-
-    status = Number(status);
 
     // Gather validated values
     const updatedRoom = {
