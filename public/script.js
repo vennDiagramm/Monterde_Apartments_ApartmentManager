@@ -27,41 +27,43 @@ function getCurrentApartment() {
 
 /**  ----------------------     ROOMS SECTIONS    ----------------------     **/
 
-// Update room dropdown based on selected apartment (Now Global)
+// Update room dropdown based on selected apartment
 function updateRoomDropdown(apartment) {
-    const roomDropdown = document.querySelectorAll(".roomId"); // multiple
-    if (!roomDropdown) return;
-    
-    roomDropdown.innerHTML = ""; // Clear existing options
-  
-    // Map apartments to their Apt_Loc_ID
-    const apartmentMap = {
-        "Matina Apartment": 1,
-        "Sesame Apartment": 2,
-        "Nabua Apartment": 3
-    };
-  
-    const aptLocId = apartmentMap[apartment];
-    if (!aptLocId) return;
-  
-    // Fetch available rooms from the database
-    fetch(`/getRooms/${aptLocId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.length === 0) {
-                let option = document.createElement("option");
-                option.textContent = "No available rooms";
-                roomDropdown.appendChild(option);
-            } else {
-                data.forEach(room => {
+    const roomDropdowns = document.querySelectorAll(".roomId"); // Select multiple elements
+    if (roomDropdowns.length === 0) return;
+
+    roomDropdowns.forEach(dropdown => {
+        dropdown.innerHTML = ""; // Clear existing options
+
+        // Map apartments to their Apt_Loc_ID
+        const apartmentMap = {
+            "Matina Apartment": 1,
+            "Sesame Apartment": 2,
+            "Nabua Apartment": 3
+        };
+
+        const aptLocId = apartmentMap[apartment];
+        if (!aptLocId) return;
+
+        // Fetch available rooms from the database
+        fetch(`/getRooms/${aptLocId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length === 0) {
                     let option = document.createElement("option");
-                    option.value = room.Room_ID;
-                    option.textContent = `Room ${room.Room_ID}`;
-                    roomDropdown.appendChild(option);
-                });
-            }
-        })
-        .catch(error => console.error("Error fetching rooms:", error));
+                    option.textContent = "No available rooms";
+                    dropdown.appendChild(option);
+                } else {
+                    data.forEach(room => {
+                        let option = document.createElement("option");
+                        option.value = room.Room_ID;
+                        option.textContent = `Room ${room.Room_ID}`;
+                        dropdown.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => console.error("Error fetching rooms:", error));
+    });
 }
 // End of Update room dropdown based on selected apartment
 
