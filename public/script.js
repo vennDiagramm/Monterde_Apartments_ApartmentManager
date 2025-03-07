@@ -9,6 +9,7 @@ function closeModal(modalId) {
   modal.style.display = "none";
 }
 
+const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
 // Get rooms by aptLocId
 function getCurrentApartment() {
     const slides = document.querySelectorAll(".mySlides");
@@ -65,8 +66,6 @@ function updateRoomDropdown(apartment) {
 
 // Show by rooms
 document.addEventListener("DOMContentLoaded", function () {
-  const apartmentNames = ["Sesame Apartment", "Matina Apartment", "Nabua Apartment"];
-
   // Get the current apartment name
   function getCurrentApartment() {
       const slides = document.querySelectorAll(".mySlides");
