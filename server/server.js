@@ -13,7 +13,7 @@ app.use(express.static('public')); // Serve static files from the public folder
 
 // Serve home.html directly from the root (one level up from the 'server' folder)
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'home.html')); // Go up one level from 'server'
+    res.sendFile(path.join(__dirname, '../public', 'home.html')); // Go up one level from 'server'
 });
 
 // Get Room List
