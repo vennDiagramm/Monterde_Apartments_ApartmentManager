@@ -264,6 +264,7 @@ async function removeTenant(event) {
 
 // Update Tenant Details
 async function updateRoom(event) {
+    event.preventDefault();
     const selectedRoomId = document.getElementById("roomSelect").value;
     const floor = document.getElementById("roomFloor").value;
     const tenants = document.getElementById("numTenants").value;
