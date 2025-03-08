@@ -269,9 +269,96 @@ async function removeTenant(event) {
   }
   // End of Remove a Tenant Function
 
+// Show name for Edit Tenant
+async function fetchTenantName(personId) {
+    const nameField = document.getElementById("nameId");
+
+    console.log(`THE PERSON ID: ${personId}`);
+    if (!personId) {
+        nameField.value = ""; // Clear name field if input is empty
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/get-person-name/${personId}`);
+        const data = await response.json();
+
+        if (response.ok && data.name) {
+            nameField.value = data.name; // Display the name
+        } else {
+            nameField.value = "Not Found"; // Show error if no name exists
+        }
+    } catch (error) {
+        console.error("Error fetching tenant name:", error);
+        nameField.value = "Error fetching name";
+    }
+}
+
+// Event listener for input change
+document.getElementById("personIdEdit").addEventListener("change", async function() {
+    await fetchTenantName(this.value);
+});
+// End of Show name for Edit Tenant Function
 
 // Edit Tenant Details
+async function editTenant(event) {
+    event.preventDefault();
 
+    const personId = document.getElementById("personIdEdit").value;
+    const contact = document.getElementById("contactId").value;
+    const moveInDate = document.getElementById("moveInDateId").value;
+    const moveOutDate = document.getElementById("moveOutDateId").value;
+
+    if (!personId || isNaN(personId) || !contact || isNaN(contact) || !moveInDate || !moveOutDate) {
+        alert("All fields are required.");
+        return;
+    }
+
+    console.log(`The person id: ${personId}`);
+    console.log(contact);
+    console.log(moveInDate);
+    console.log(moveOutDate);
+    
+    if (!/^\d{11}$/.test(contact)) {
+        alert("Contact number must be exactly 11 digits.");
+        return;
+    }
+
+    const moveIn = new Date(moveInDate);
+    const moveOut = new Date(moveOutDate);
+    const today = new Date();
+
+    if (moveIn >= moveOut) {
+        alert("Move-out date must be after the move-in date.");
+        return;
+    }
+
+    if (moveOut <= moveIn) {
+        alert("Move-In date must be before the move-out date.");
+        return;
+    }
+
+    try { 
+        const response = await fetch(`http://localhost:3000/edit-tenant/${personId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contact, moveInDate, moveOutDate })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert("Tenant updated successfully.");
+            document.getElementById("editTenantForm").reset();
+            closeModal("editTenantModal"); // Close modal after updating
+        } else {
+            alert(`Error: ${result.error || "Unknown error occurred."}`);
+        }
+    } catch (error) {
+        console.error("Failed to update tenant:", error);
+        alert("Failed to connect to the server. Please try again.");
+    }
+}
 // End of Edit Tenant Details Function
 
 // Update Room Details
@@ -357,12 +444,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalButtons = {
         addTenant: document.querySelector('.buttons button:nth-child(1)'),
         removeTenant: document.querySelector('.buttons button:nth-child(2)'),
+        editTenant: document.querySelector('.buttons button:nth-child(3)'),
         rooms: document.querySelector('.buttons button:nth-child(4)')
     };
   
     // Event Listeners for Opening Modals
     modalButtons.addTenant.addEventListener('click', () => openModal('addTenantModal'));
     modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
+    modalButtons.editTenant.addEventListener('click', () => openModal('editTenantModal'));
     modalButtons.rooms.addEventListener('click', () => {
         openModal('roomsModal');
 
@@ -410,6 +499,11 @@ addTenantForm.addEventListener('submit', addTenant);
 
 const removeTenantForm = document.getElementById('removeTenantForm');
 removeTenantForm.addEventListener('submit', removeTenant);
+
+const editTenantForm = document.getElementById('editTenantForm');
+if (editTenantForm) {
+    editTenantForm.addEventListener('submit', editTenant);
+}
 
 const updateRoomForm = document.getElementById('updateRoomForm');
 updateRoomForm.addEventListener('submit', updateRoom);
