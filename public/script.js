@@ -560,6 +560,64 @@ async function updateRoom(event) {
 }
 // End of Update Room Details Function
 
+// Payment Process
+async function paymentProcess(event) {
+    try {
+      const payment = parseFloat(document.getElementById("payment").value);
+      const remarks = document.getElementById("remarks").value
+      
+      //Checks if valid
+      if (!payment || payment < rentPrice) {
+        alert("Enter a valid amount greater than or equal to the rent price.");
+        return;
+      }
+  
+      //Payment change calculation
+      const change = payment - rentPrice;
+      alert(`Payment successful! Change: ${change.toFixed(2)}`);
+  
+      // Send payment data to the server
+      const response = await fetch("http://localhost:3000/payment-process", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          personId: document.getElementById("personId").value,
+          roomId: document.getElementById("roomId").value,
+          amountPaid: payment,
+          change: change,
+          date: new Date().toISOString().split("T")[0],
+          remarks: remarks,
+        }),
+      });
+  
+      //Displays the change 
+      document.getElementById("change").innerText = `Change: ₱${change.toFixed(2)}`;
+      
+      if (!response.ok) throw new Error("Failed to process payment");
+      alert("Payment recorded successfully!");
+  
+    } catch (error) {
+      console.error(error);
+      alert("Error processing payment.");
+    }
+  }
+  
+//Extra function for payment section
+const confirmButton = document.getElementById("confirmButton");
+confirmButton.addEventListener("click", async () => {
+    await getRentPrice(); // Fetch rent price
+    
+    if (rentPrice > 0) {
+        document.getElementById("rentSection").style.display = "block"; // Show payment section
+      } else {
+        document.getElementById("rentSection").style.display = "none"; // Hide payment section
+      }
+});
+
+  // End of Payment Function
+
 // Setup Event Listeners -- para click sa modal, popup ang modal
 document.addEventListener('DOMContentLoaded', () => {
     // Hide all modals when page loads
@@ -571,7 +629,8 @@ document.addEventListener('DOMContentLoaded', () => {
         addTenant: document.querySelector('.buttons button:nth-child(1)'),
         removeTenant: document.querySelector('.buttons button:nth-child(2)'),
         editTenant: document.querySelector('.buttons button:nth-child(3)'),
-        rooms: document.querySelector('.buttons button:nth-child(4)')
+        rooms: document.querySelector('.buttons button:nth-child(4)'),
+        payment: document.querySelector('.buttons button:nth-child(5)')
     };
   
     // Event Listeners for Opening Modals
@@ -580,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalButtons.editTenant.addEventListener('click', () => openModal('editTenantModal'));
     modalButtons.rooms.addEventListener('click', () => {
         openModal('roomsModal');
-
+          
          // Prevent invalid inputs
         const numericInputs = ["roomFloor", "numTenants", "maxRenters"];
         const priceInput = document.getElementById("roomPrice");
@@ -594,6 +653,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
+    modalButtons.payment.addEventListener('click', () => openModal('paymentModal'));        
 
         // Ensure room price input allows only two decimal places & no negatives
         if (priceInput) {
@@ -633,6 +693,9 @@ if (editTenantForm) {
 
 const updateRoomForm = document.getElementById('updateRoomForm');
 updateRoomForm.addEventListener('submit', updateRoom);
+
+const paymentForm = document.getElementById('paymentForm');
+paymentForm.addEventListener('submit', paymentProcess);
 // End of Form Submissions
 
 

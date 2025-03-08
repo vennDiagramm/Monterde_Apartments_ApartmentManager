@@ -323,6 +323,39 @@
         <!-- End of View Rooms Modal -->
         <!--    END FOR ROOMS    -->
          
+        <!-- Payment Tenant Modal-->
+        <div id="paymentModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <h2>Payment</h2>
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="personId">Enter Person ID: </label>
+                        <input type="number" id="personId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomId">Enter Room Number: </label>
+                        <input type="number" id="roomId" required>
+                    </div>
+                    <button type="button" id="confirmButton">Confirm</button>
+
+                    <div id="rentSection" class="form-group" style="display: none;">
+                        <br>
+                        <h2>Rent: <span id="rentPrice">0</span></h3>
+                        <br>    
+                        <label for="payment">Enter Payment: </label>
+                        <input type="number" id="payment" required>
+                        <label for="remarks">Enter Remarks: </label>
+                        <input type="text" id="remarks">
+                        <br>
+                        <button type="submit">Pay</button>
+                        <br>
+                        <h3>Change: <span id="change">0</span></h3>
+                    </div>
+                </form> 
+            </div>
+        </div>
+        <!-- End of Payment-->
     </div>
     <script src="script.js"></script>
 </body>

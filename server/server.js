@@ -340,6 +340,79 @@ app.get('/get-person-name/:personId', async (req, res) => {
     }
 });
 // End of Show Edit Tenant Name
+
+//Payment route
+// Fetch Rent Price for Payment Process
+app.get('/get-rent-price', async (req, res) => {
+    const { personId, roomId } = req.query;
+
+    if (!personId) {
+        return res.status(400).json({ error: 'personId is required' });
+    }
+    if (!roomId) {
+        return res.status(400).json({ error: 'roomId is required' });
+    }
+
+
+    try {
+        const query = `
+            SELECT cb.total_bill AS rent_price
+            FROM Contract_Bill cb
+            JOIN Contract_Details cd ON cb.Contract_Details_ID = cd.Contract_Details_ID
+            JOIN Contract c ON cd.Contract_Details_ID = c.Contract_ID
+            WHERE c.person_ID = ? AND cd.Room_ID = ?
+        `;
+
+        const [rows] = await db.execute(query, [personId, roomId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'No rent price found for this personId or roomId' });
+        }
+
+        res.json({ rent_price: rows[0].rent_price });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Payment Process
+app.post("/process-payment", async (req, res) => {
+    const { personId, roomId, amountPaid, remarks } = req.body;
+
+    if (!personId || !roomId || !amountPaid) {
+        return res.status(400).json({ error: "Missing required fields: personId, roomId, or amountPaid" });
+    }
+
+    // If remarks is empty or undefined, set it to NULL
+    const remarksValue = remarks && remarks.trim() !== "" ? remarks : null;
+
+    const sql = `
+        INSERT INTO Payment (Contract_Bill_ID, Date, Amount, Remarks)
+        SELECT 
+            cb.Contract_Bill_ID, 
+            CURDATE() AS Date, 
+            ? AS Amount, 
+            ? AS Remarks
+        FROM Contract_Bill cb
+        JOIN Contract_Details cd ON cb.Contract_Details_ID = cd.Contract_Details_ID
+        JOIN Contract c ON c.Contract_ID = cd.Contract_Details_ID
+        WHERE c.Person_ID = ? AND cd.Room_ID = ?
+    `;
+
+    db.query(sql, [amountPaid, remarksValue, personId, roomId], (err, result) => {
+        if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ error: "Database error while processing payment" });
+        }
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: "No matching contract found for the given personId and roomId" });
+        }
+
+        res.json({ success: true, message: "Payment recorded successfully!" });
+    });
+});
 /**     -------     END OF TENANTS API SECTION      -------     **/
 
 
