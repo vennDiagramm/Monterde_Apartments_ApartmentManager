@@ -130,6 +130,13 @@ async function populateRoomTable(rooms) {
     });
 }
 
+// More OPTIONS for ROOMS
+document.getElementById("moreOptionsBtn").addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent accidental form submission
+    const options = document.getElementById("moreOptions");
+    options.style.display = options.style.display === "none" ? "block" : "none";
+});
+
 document.getElementById("roomsButton").addEventListener("click", async function () {
     const apartment = getCurrentApartment();
     const apartmentMap = {

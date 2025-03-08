@@ -148,17 +148,9 @@
             <div class="modal-content">
                 <span class="close-button">&times;</span>
                 <h2>Manage Rooms</h2>
+                <p>Room View and Editor</p>
 
                 <form id="updateRoomForm">
-                    
-                <!-- Room Selection -->
-                <div class="form-group">
-                    <label for="roomId">Select Room ID:</label>
-                    <select class="roomId" required> <!-- So rooms selected rooms will drop down -->
-                        <option value="">Select a Room</option>
-                    </select>
-                </div>
-
                 <!-- Room Table -->
                 <table id="roomTable">
                     <thead>
@@ -175,6 +167,14 @@
                         <!-- Rooms will be inserted dynamically -->
                     </tbody>
                 </table>
+
+                <!-- Room Selection -->
+                <div class="form-group">
+                    <label for="roomId">Select Room ID:</label>
+                    <select class="roomId" required> <!-- So rooms selected rooms will drop down -->
+                        <option value="">Select a Room</option>
+                    </select>
+                </div>
 
                 <!-- Room Edit Form -->
                 <div class="form-group">
@@ -209,6 +209,17 @@
                 </div>
 
                 <button id="updateRoom">Update Room</button>
+
+                <!-- More Options Toggle -->
+                <button id="moreOptionsBtn" style="margin-top: 10px; display: block;">More Options ▼</button>
+
+                <div id="moreOptions" style="display: none; margin-top: 10px;">
+                    <div style="display: flex; gap: 10px;">
+                        <button id="addRoom">Add Room</button>
+                        <button id="deleteRoom">Delete Room</button>
+                    </div>
+                    <button id="viewRooms" style="margin-top: 10px; display: block;">View All Rooms</button>
+                </div>
                 </form>    
             </div>
         </div>
