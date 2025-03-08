@@ -61,7 +61,7 @@ app.get("/getFullRoomView/:aptLocId", async (req, res) => {
         res.status(500).json({ error: "Database error" });
     }
 });
-
+// End of Get Full View of Room via aptLocId
 
 // UPDATE room below
 app.post("/updateRoom", async (req, res) => {
@@ -84,27 +84,48 @@ app.post("/updateRoom", async (req, res) => {
 
 // add room route
 app.post("/addRoom", async (req, res) => {
-    const { floor, maxRenters, price, status } = req.body;
+    const { floor, tenants, max_renters, status, price, apt_loc } = req.body;
+    const sql = `
+        INSERT INTO room (Room_floor, Number_of_Renters, Room_maxRenters, Room_Status_ID, Room_Price, Apt_Loc_ID) 
+        VALUES (?, ?, ?, ?, ?, ?)`;
     try {
-        await db.query("INSERT INTO room (Room_floor, Room_maxRenters, Room_Price, Room_Status_Desc) VALUES (?, ?, ?, ?)", 
-                      [floor, maxRenters, price, status]);
-        res.sendStatus(201);
+        await db.query(sql, [floor, tenants, max_renters, status, price, apt_loc]);
+        res.json({ message: "Room added successfully!" });
     } catch (err) {
-        res.status(500).json({ error: "Database error" });
+        res.status(500).json({ error: err.message || "Database error" });
     }
 });
 // End of add room route
 
-// delete room route
+// Delete Room Route
 app.delete("/deleteRoom/:id", async (req, res) => {
+    let roomId = parseInt(req.params.id, 10);
+
+    // Validate Room ID
+    if (isNaN(roomId)) {
+        return res.status(400).json({ error: "Invalid Room ID format." });
+    }
+
     try {
-        await db.query("DELETE FROM room WHERE Room_ID = ?", [req.params.id]);
-        res.sendStatus(200);
+        // Execute the DELETE query
+        const [deleteResult] = await db.query("DELETE FROM room WHERE Room_ID = ?", [roomId]);
+
+        console.log("Delete Result:", deleteResult); // Debugging log
+
+        // If no rows were affected, return a 404 error
+        if (deleteResult.affectedRows === 0) {
+            console.log(`Room ID ${roomId} does not exist.`);
+            return res.status(404).json({ error: "Room ID not found. Deletion cannot be performed." });
+        }
+
+        res.status(200).json({ message: "Room deleted successfully!" });
+
     } catch (err) {
+        console.error("Error during deletion:", err);
         res.status(500).json({ error: "Database error" });
     }
 });
-// End of delete room route
+// End of Delete Room Route
 
 /**     -------     END OF ROOMS API SECTION      -------     **/
 

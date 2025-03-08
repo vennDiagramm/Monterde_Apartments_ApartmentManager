@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupRoomActions();
 });
 
-// 🔹 Function to handle opening and closing modals
+// Handle opening and closing modals
 function setupModals() {
     const modals = {
         addRoom: document.getElementById("addRoomModal"),
@@ -190,72 +190,154 @@ function setupModals() {
     });
 }
 
-// 🔹 Function to handle Add, Delete, and Fetch rooms
-function setupRoomActions() {
-    document.getElementById("addRoomForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const roomData = getRoomFormData();
-        await addRoom(roomData);
-    });
-
-    document.getElementById("deleteRoomForm").addEventListener("submit", async function (e) {
-        e.preventDefault();
-        const roomId = document.getElementById("roomIdDelete").value;
-        await deleteRoom(roomId);
-    });
-}
-
-// 🔹 Function to get room data from the Add Room form
+// Get room data from the Add Room form
 function getRoomFormData() {
-    return {
-        floor: document.getElementById("roomFloorAdd").value,
-        maxRenters: document.getElementById("maxRentersAdd").value,
-        price: document.getElementById("roomPriceAdd").value,
-        status: document.getElementById("roomStatusAdd").value
-    };
+    const floor = document.getElementById("roomFloorAdd").value;
+    const maxRenters = document.getElementById("maxRentersAdd").value;
+    const price = document.getElementById("roomPriceAdd").value;
+    const status = document.getElementById("roomStatusAdd").value;
+
+    if (floor === "" || maxRenters === "" || price === "" || status === "") {
+        alert("Please fill in all fields!");
+        return null;  // Prevent sending empty values
+    }
+
+    return { floor, maxRenters, price, status };
 }
 
-// 🔹 API Function: Add Room
-async function addRoom(roomData) {
+// Add Room
+async function addRoom(event) {
+    event.preventDefault();
+    // const roomsModal = document.getElementById('addRoomModal');
+    const floor = parseInt(document.getElementById("roomFloorAdd").value, 10);
+    const maxRenters = parseInt(document.getElementById("maxRentersAdd").value, 10);
+    const price = parseFloat(document.getElementById("roomPriceAdd").value);
+    const status = parseInt(document.getElementById("roomStatusAdd").value, 10);
+    let number_of_Renters = 0;
+    
+    // Get the apartment name
+    const apartmentName = getCurrentApartment();
+    
+    // Map apartments to their Apt_Loc_ID
+    const apartmentMap = {
+        "Matina Apartment": 1,
+        "Sesame Apartment": 2,
+        "Nabua Apartment": 3
+    };
+    
+    // Get the ID from the map
+    const apt_loc = apartmentMap[apartmentName];
+    
+    // Validate apartment ID
+    if (!apt_loc) {
+        alert("Invalid apartment location.");
+        return;
+    }
+    
+    // Validate input fields
+    if (isNaN(floor) || floor < 0) {
+        alert("Floor must be a non-negative number.");
+        return;
+    }
+    if (isNaN(maxRenters) || maxRenters < 1) {
+        alert("Max renters must be at least 1.");
+        return;
+    }
+    if (isNaN(price) || price < 0) {
+        alert("Price must be a non-negative number.");
+        return;
+    }
+    if (isNaN(status)) {
+        alert("Status is required.");
+        return;
+    }
+    
+    // Prepare request payload with correct parameter names
+    const newRoom = { 
+        floor, 
+        tenants: number_of_Renters, 
+        max_renters: maxRenters, 
+        status, 
+        price, 
+        apt_loc
+    };
+    
     try {
-        const response = await fetch("/addRoom", {
+        const response = await fetch("http://localhost:3000/addRoom", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(roomData)
+            body: JSON.stringify(newRoom)
         });
 
         if (response.ok) {
             alert("Room added successfully!");
-            document.getElementById("addRoomModal").style.display = "none";
+            closeModal('addRoomModal');
+            event.target.reset();
         } else {
-            alert("Error adding room!");
+            alert("Failed to add room.");
         }
+        
+        fetchRooms(); // Refresh rooms to update the display
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error adding room:", error);
     }
 }
 
-// 🔹 API Function: Delete Room
+
+// Delete Room
 async function deleteRoom(roomId) {
-    try {
-        const response = await fetch(`/deleteRoom/${roomId}`, { method: "DELETE" });
+    if (!roomId) {
+        alert("Please enter a valid Room ID!");
+        return;
+    }
 
-        if (response.ok) {
-            alert("Room deleted successfully!");
-            document.getElementById("deleteRoomModal").style.display = "none";
-        } else {
-            alert("Error deleting room!");
+    // Confirm deletion
+    const confirmDeletion = confirm("Are you sure you want to delete this room?");
+    if (!confirmDeletion) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/deleteRoom/${roomId}`, { method: "DELETE" });
+
+        if (!response.ok) {
+            const errorMessage = await response.text();
+            throw new Error(errorMessage);
         }
+
+        alert("Room deleted successfully!");
+        
+        // Close modal and refresh room list
+        document.getElementById("deleteRoomModal").style.display = "none";
+        fetchRooms(); // Refresh room list
+        
+        return true;
+
     } catch (error) {
         console.error("Error:", error);
+        alert("Error deleting room: " + error.message);
     }
 }
+// End of Delete Room Function
 
-// 🔹 API Function: Fetch Rooms (Uses Existing `/rooms` API)
+
+//  Fetch Rooms 
 async function fetchRooms() {
     try {
-        const response = await fetch("/rooms");
+        const response = await fetch("http://localhost:3000/rooms");
+
+        if (!response.ok) {
+            throw new Error("Failed to fetch rooms");
+        }
+
         const rooms = await response.json();
+
+        console.log("Fetched rooms:", rooms); // Debugging
+
+        if (!rooms.length) {
+            alert("No rooms found.");
+            return;
+        }
 
         const tableBody = document.querySelector("#allRoomsTable tbody");
         tableBody.innerHTML = ""; // Clear old data
@@ -273,6 +355,7 @@ async function fetchRooms() {
         });
     } catch (error) {
         console.error("Error fetching rooms:", error);
+        alert("Error loading rooms: " + error.message);
     }
 }
 /**     END OF MORE OPTIONS FOR ROOM SECTION       **/
@@ -546,8 +629,8 @@ async function updateRoom(event) {
 
         if (response.ok) {
             alert("Room updated successfully!");
-            // closeModal('roomsModal');
-            // event.target.reset();
+            closeModal('roomsModal');
+            event.target.reset();
         } else {
             alert("Failed to update room.");
         }
@@ -693,6 +776,21 @@ if (editTenantForm) {
 
 const updateRoomForm = document.getElementById('updateRoomForm');
 updateRoomForm.addEventListener('submit', updateRoom);
+
+const addRoomForm = document.getElementById('addRoomForm');
+addRoomForm.addEventListener('submit', addRoom);
+
+const deleteRoomForm = document.getElementById('deleteRoomForm');
+deleteRoomForm.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    const roomId = document.getElementById("roomIdDelete").value;
+    const success = await deleteRoom(roomId);
+    
+    if (success) {
+        // Only reset if deletion was successful
+        this.reset();
+    }
+});
 
 const paymentForm = document.getElementById('paymentForm');
 paymentForm.addEventListener('submit', paymentProcess);
