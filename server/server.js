@@ -16,6 +16,7 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public', 'home.html')); // Go up one level from 'server'
 });
 
+/**     -------     ROOMS API SECTION      -------     **/
 // Get Room List
 app.get('/rooms', async (req, res) => {
     try {
@@ -62,7 +63,7 @@ app.get("/getFullRoomView/:aptLocId", async (req, res) => {
 });
 
 
-// UPDATE route below
+// UPDATE room below
 app.post("/updateRoom", async (req, res) => {
     const { room_id, floor, tenants, max_renters, price, status } = req.body;
     const sql = `
@@ -79,8 +80,36 @@ app.post("/updateRoom", async (req, res) => {
         res.status(500).json({ error: "Database update failed" });
     }
 });
-// End of UPDATE route
+// End of UPDATE room
 
+// add room route
+app.post("/addRoom", async (req, res) => {
+    const { floor, maxRenters, price, status } = req.body;
+    try {
+        await db.query("INSERT INTO room (Room_floor, Room_maxRenters, Room_Price, Room_Status_Desc) VALUES (?, ?, ?, ?)", 
+                      [floor, maxRenters, price, status]);
+        res.sendStatus(201);
+    } catch (err) {
+        res.status(500).json({ error: "Database error" });
+    }
+});
+// End of add room route
+
+// delete room route
+app.delete("/deleteRoom/:id", async (req, res) => {
+    try {
+        await db.query("DELETE FROM room WHERE Room_ID = ?", [req.params.id]);
+        res.sendStatus(200);
+    } catch (err) {
+        res.status(500).json({ error: "Database error" });
+    }
+});
+// End of delete room route
+
+/**     -------     END OF ROOMS API SECTION      -------     **/
+
+
+/**     -------     TENANTS API SECTION      -------     **/
 // Add Tenant Route
 app.post('/add-person', async (req, res) => {
     const connection = await db.getConnection();
@@ -311,6 +340,8 @@ app.get('/get-person-name/:personId', async (req, res) => {
     }
 });
 // End of Show Edit Tenant Name
+/**     -------     END OF TENANTS API SECTION      -------     **/
+
 
 // 🔹 Start the Server
 app.listen(port, () => {

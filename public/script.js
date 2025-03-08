@@ -130,13 +130,7 @@ async function populateRoomTable(rooms) {
     });
 }
 
-// More OPTIONS for ROOMS
-document.getElementById("moreOptionsBtn").addEventListener("click", function(event) {
-    event.preventDefault(); // Prevent accidental form submission
-    const options = document.getElementById("moreOptions");
-    options.style.display = options.style.display === "none" ? "block" : "none";
-});
-
+// Fetch rooms based on the current apartment
 document.getElementById("roomsButton").addEventListener("click", async function () {
     const apartment = getCurrentApartment();
     const apartmentMap = {
@@ -150,6 +144,138 @@ document.getElementById("roomsButton").addEventListener("click", async function 
     populateRoomTable(rooms);
 });
 // End of fetch rooms based on the current apartment
+
+/**     MORE OPTIONS FOR ROOM SECTION       **/
+
+// More OPTIONS for ROOMS
+document.getElementById("moreOptionsBtn").addEventListener("click", function(event) {
+    event.preventDefault(); // Prevent accidental form submission
+    const options = document.getElementById("moreOptions");
+    options.style.display = options.style.display === "none" ? "block" : "none";
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    setupModals();
+    setupRoomActions();
+});
+
+// 🔹 Function to handle opening and closing modals
+function setupModals() {
+    const modals = {
+        addRoom: document.getElementById("addRoomModal"),
+        deleteRoom: document.getElementById("deleteRoomModal"),
+        viewRooms: document.getElementById("viewRoomsModal"),
+    };
+
+    const buttons = {
+        addRoom: document.getElementById("addRoom"),
+        deleteRoom: document.getElementById("deleteRoom"),
+        viewRooms: document.getElementById("viewRooms"),
+    };
+
+    // Close buttons
+    document.querySelectorAll(".close-button").forEach(button => {
+        button.addEventListener("click", () => {
+            Object.values(modals).forEach(modal => modal.style.display = "none");
+        });
+    });
+
+    // Open modal events
+    buttons.addRoom.addEventListener("click", () => modals.addRoom.style.display = "flex");
+    buttons.deleteRoom.addEventListener("click", () => modals.deleteRoom.style.display = "flex");
+    buttons.viewRooms.addEventListener("click", () => {
+        fetchRooms();
+        modals.viewRooms.style.display = "flex";
+    });
+}
+
+// 🔹 Function to handle Add, Delete, and Fetch rooms
+function setupRoomActions() {
+    document.getElementById("addRoomForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const roomData = getRoomFormData();
+        await addRoom(roomData);
+    });
+
+    document.getElementById("deleteRoomForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const roomId = document.getElementById("roomIdDelete").value;
+        await deleteRoom(roomId);
+    });
+}
+
+// 🔹 Function to get room data from the Add Room form
+function getRoomFormData() {
+    return {
+        floor: document.getElementById("roomFloorAdd").value,
+        maxRenters: document.getElementById("maxRentersAdd").value,
+        price: document.getElementById("roomPriceAdd").value,
+        status: document.getElementById("roomStatusAdd").value
+    };
+}
+
+// 🔹 API Function: Add Room
+async function addRoom(roomData) {
+    try {
+        const response = await fetch("/addRoom", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(roomData)
+        });
+
+        if (response.ok) {
+            alert("Room added successfully!");
+            document.getElementById("addRoomModal").style.display = "none";
+        } else {
+            alert("Error adding room!");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+// 🔹 API Function: Delete Room
+async function deleteRoom(roomId) {
+    try {
+        const response = await fetch(`/deleteRoom/${roomId}`, { method: "DELETE" });
+
+        if (response.ok) {
+            alert("Room deleted successfully!");
+            document.getElementById("deleteRoomModal").style.display = "none";
+        } else {
+            alert("Error deleting room!");
+        }
+    } catch (error) {
+        console.error("Error:", error);
+    }
+}
+
+// 🔹 API Function: Fetch Rooms (Uses Existing `/rooms` API)
+async function fetchRooms() {
+    try {
+        const response = await fetch("/rooms");
+        const rooms = await response.json();
+
+        const tableBody = document.querySelector("#allRoomsTable tbody");
+        tableBody.innerHTML = ""; // Clear old data
+
+        rooms.forEach(room => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${room.Room_ID}</td>
+                <td>${room.Room_floor}</td>
+                <td>${room.Room_maxRenters}</td>
+                <td>₱${room.Room_Price.toLocaleString()}</td>
+                <td>${room.Room_Status_Desc}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error fetching rooms:", error);
+    }
+}
+/**     END OF MORE OPTIONS FOR ROOM SECTION       **/
 
 /**  ----------------------     END OF ROOMS SECTION    ----------------------     **/
 
