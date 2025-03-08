@@ -301,63 +301,58 @@ async function deleteRoom(roomId) {
         const response = await fetch(`http://localhost:3000/deleteRoom/${roomId}`, { method: "DELETE" });
 
         if (!response.ok) {
-            const errorMessage = await response.text();
-            throw new Error(errorMessage);
+            const errorData = await response.json(); // Parse JSON error response
+            alert(errorData.error); // Show user-friendly message
+            return false; // Prevent further execution
         }
 
-        alert("Room deleted successfully!");
-        
+        alert(`Room ${roomId} deleted successfully!`);
+
         // Close modal and refresh room list
         document.getElementById("deleteRoomModal").style.display = "none";
-        fetchRooms(); // Refresh room list
-        
-        return true;
+        fetchRooms();
 
+        return true;
     } catch (error) {
-        console.error("Error:", error);
-        alert("Error deleting room: " + error.message);
+        console.error("Error deleting room:", error);
+        alert("An unexpected error occurred while deleting the room.");
+        return false;
     }
 }
 // End of Delete Room Function
 
-
-//  Fetch Rooms 
-async function fetchRooms() {
-    try {
-        const response = await fetch("http://localhost:3000/rooms");
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch rooms");
-        }
-
-        const rooms = await response.json();
-
-        console.log("Fetched rooms:", rooms); // Debugging
-
-        if (!rooms.length) {
-            alert("No rooms found.");
-            return;
-        }
-
-        const tableBody = document.querySelector("#allRoomsTable tbody");
-        tableBody.innerHTML = ""; // Clear old data
-
-        rooms.forEach(room => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${room.Room_ID}</td>
-                <td>${room.Room_floor}</td>
-                <td>${room.Room_maxRenters}</td>
-                <td>₱${room.Room_Price.toLocaleString()}</td>
-                <td>${room.Room_Status_Desc}</td>
-            `;
-            tableBody.appendChild(row);
-        });
-    } catch (error) {
-        console.error("Error fetching rooms:", error);
-        alert("Error loading rooms: " + error.message);
-    }
+// View All Rooms
+async function viewAllRooms(rooms) {
+    const tbody = document.getElementById('allRoomsTable').querySelector('tbody');
+    tbody.innerHTML = '';  // Clear existing table data
+    rooms.forEach(room => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${room.Room_ID}</td>
+            <td>${room.Room_floor}</td>
+            <td>${room.Number_of_Renters}</td>
+            <td>${room.Room_maxRenters}</td>
+            <td>₱${room.Room_Price.toLocaleString()}</td>
+            <td>${room.Room_Status_Desc}</td>
+        `;
+        tbody.appendChild(row);
+    });
 }
+
+// Fetch rooms based on the current apartment
+document.getElementById("roomsButton").addEventListener("click", async function () {
+    const apartment = getCurrentApartment();
+    const apartmentMap = {
+        "Matina Apartment": 1,
+        "Sesame Apartment": 2,
+        "Nabua Apartment": 3
+    };
+    const aptLocId = apartmentMap[apartment];
+    const response = await fetch(`/rooms`);
+    const rooms = await response.json();
+    viewAllRooms(rooms);
+});
+// End of View All Rooms Function
 /**     END OF MORE OPTIONS FOR ROOM SECTION       **/
 
 /**  ----------------------     END OF ROOMS SECTION    ----------------------     **/

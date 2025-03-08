@@ -99,30 +99,33 @@ app.post("/addRoom", async (req, res) => {
 
 // Delete Room Route
 app.delete("/deleteRoom/:id", async (req, res) => {
-    let roomId = parseInt(req.params.id, 10);
-
-    // Validate Room ID
-    if (isNaN(roomId)) {
-        return res.status(400).json({ error: "Invalid Room ID format." });
-    }
+    const connection = await db.getConnection();
 
     try {
-        // Execute the DELETE query
-        const [deleteResult] = await db.query("DELETE FROM room WHERE Room_ID = ?", [roomId]);
+        await connection.beginTransaction();
 
-        console.log("Delete Result:", deleteResult); // Debugging log
+        const roomId = req.params.id;
 
-        // If no rows were affected, return a 404 error
-        if (deleteResult.affectedRows === 0) {
-            console.log(`Room ID ${roomId} does not exist.`);
-            return res.status(404).json({ error: "Room ID not found. Deletion cannot be performed." });
+        // Check if the room exists
+        const [[room]] = await connection.query("SELECT 1 FROM room WHERE Room_ID = ?", [roomId]);
+
+        if (!room) {
+            await connection.rollback();
+            return res.status(404).json({ error: "Room does not exists!" });
         }
 
-        res.status(200).json({ message: "Room deleted successfully!" });
+        // Delete the room
+        const [result] = await connection.query("DELETE FROM room WHERE Room_ID = ?", [roomId]);
+
+        await connection.commit();
+        res.json({ message: `Room ${roomId} deleted successfully` });
 
     } catch (err) {
-        console.error("Error during deletion:", err);
-        res.status(500).json({ error: "Database error" });
+        await connection.rollback();
+        console.error(err);
+        res.status(500).json({ error: "An error occurred while deleting the room" });
+    } finally {
+        connection.release();
     }
 });
 // End of Delete Room Route
