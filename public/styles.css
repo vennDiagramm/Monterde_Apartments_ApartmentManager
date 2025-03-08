@@ -276,3 +276,29 @@ tr:nth-child(even) {
 tr:hover {
     background-color: #f1f1f1;
 }
+
+/* Specifically target viewRoomsModal */
+#viewRoomsModal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
+    overflow: auto; /* Enable scrolling */
+}
+
+/* Make only the viewRoomsModal content scrollable */
+#viewRoomsModal .modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 20px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 80vh; /* Prevents overflowing */
+    overflow-y: auto; /* Scroll inside the modal */
+    border-radius: 10px;
+}
+

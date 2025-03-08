@@ -28,6 +28,23 @@ app.get('/rooms', async (req, res) => {
     }
 });
 
+// Get Room list with Room Status Description
+app.get('/viewAll', async (req, res) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT r.Room_ID, r.Room_floor, r.Number_of_Renters, r.Room_maxRenters, r.Room_Price,
+                rs.Room_Status_Desc, al.Apt_Location
+                FROM room r
+                LEFT JOIN room_status rs ON r.Room_Status_ID = rs.Room_Status_ID
+                LEFT JOIN apartment_location al ON r.Apt_Loc_ID = al.Apt_Loc_ID;
+        `);
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+
 
 // Get rooms by aptLocId
 app.get("/getRooms/:aptLocId", async (req, res) => {

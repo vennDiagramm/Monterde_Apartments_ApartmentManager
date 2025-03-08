@@ -263,7 +263,7 @@ async function addRoom(event) {
     };
     
     try {
-        const response = await fetch("http://localhost:3000/addRoom", {
+        const response = await fetch("/addRoom", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(newRoom)
@@ -298,7 +298,7 @@ async function deleteRoom(roomId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/deleteRoom/${roomId}`, { method: "DELETE" });
+        const response = await fetch(`/deleteRoom/${roomId}`, { method: "DELETE" });
 
         if (!response.ok) {
             const errorData = await response.json(); // Parse JSON error response
@@ -334,23 +334,35 @@ async function viewAllRooms(rooms) {
             <td>${room.Room_maxRenters}</td>
             <td>₱${room.Room_Price.toLocaleString()}</td>
             <td>${room.Room_Status_Desc}</td>
+            <td>${room.Apt_Location}</td>
         `;
         tbody.appendChild(row);
     });
 }
 
-// Fetch rooms based on the current apartment
-document.getElementById("roomsButton").addEventListener("click", async function () {
-    const apartment = getCurrentApartment();
-    const apartmentMap = {
-        "Matina Apartment": 1,
-        "Sesame Apartment": 2,
-        "Nabua Apartment": 3
-    };
-    const aptLocId = apartmentMap[apartment];
-    const response = await fetch(`/rooms`);
+// Fetch rooms based on the current apartment.
+document.getElementById("viewRooms").addEventListener("click", async function () {
+    fetchRooms();
+    const response = await fetch(`/viewAll`);
     const rooms = await response.json();
     viewAllRooms(rooms);
+
+    // Only open the 'viewRoomsModal'
+    const viewRoomsModal = document.getElementById("viewRoomsModal");
+    viewRoomsModal.style.display = "block";
+});
+
+// Close ONLY the viewRoomsModal
+document.querySelector("#viewRoomsModal .close-button").addEventListener("click", function () {
+    document.getElementById("viewRoomsModal").style.display = "none";
+});
+
+// Close modal if clicking outside of it (but only for viewRoomsModal)
+window.addEventListener("click", function (event) {
+    const viewRoomsModal = document.getElementById("viewRoomsModal");
+    if (event.target === viewRoomsModal) {
+        viewRoomsModal.style.display = "none";
+    }
 });
 // End of View All Rooms Function
 /**     END OF MORE OPTIONS FOR ROOM SECTION       **/
@@ -393,7 +405,7 @@ async function addTenant(event) {
       }
 
       // Send data to server
-      const response = await fetch('http://localhost:3000/add-person', {
+      const response = await fetch('/add-person', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
@@ -450,7 +462,7 @@ async function removeTenant(event) {
         }
   
         // Send remove request to backend
-        const response = await fetch(`http://localhost:3000/remove-tenant/${personId}`, {
+        const response = await fetch(`/remove-tenant/${personId}`, {
             method: 'DELETE'
         });
   
@@ -484,7 +496,7 @@ async function fetchTenantName(personId) {
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/get-person-name/${personId}`);
+        const response = await fetch(`/get-person-name/${personId}`);
         const data = await response.json();
 
         if (response.ok && data.name) {
@@ -543,7 +555,7 @@ async function editTenant(event) {
     }
 
     try { 
-        const response = await fetch(`http://localhost:3000/edit-tenant/${personId}`, {
+        const response = await fetch(`/edit-tenant/${personId}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contact, moveInDate, moveOutDate })
@@ -616,7 +628,7 @@ async function updateRoom(event) {
     };
 
     try {
-        const response = await fetch("http://localhost:3000/updateRoom", {
+        const response = await fetch("/updateRoom", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedRoom)
@@ -655,7 +667,7 @@ async function paymentProcess(event) {
       alert(`Payment successful! Change: ${change.toFixed(2)}`);
   
       // Send payment data to the server
-      const response = await fetch("http://localhost:3000/payment-process", {
+      const response = await fetch("/payment-process", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -795,7 +807,7 @@ paymentForm.addEventListener('submit', paymentProcess);
 // Check Rooms
 async function fetchRooms() {
   try {
-      const response = await fetch('http://localhost:3000/rooms');
+      const response = await fetch('/rooms');
       const rooms = await response.json();
 
       // Make sure at least one room exists
