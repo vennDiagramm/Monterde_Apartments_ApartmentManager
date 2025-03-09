@@ -449,12 +449,20 @@ app.get('/search-tenant/:userInput', async (req, res) => {
 
     try {
         const userInput = req.params.userInput;
-
-        let rows;
-
-        if (userInput.trim() === "All") {
-            [rows] = await connection.query(
-                `SELECT 
+        const searchInput = userInput.trim(); // Remove extra spaces
+        const nameParts = searchInput.split(/\s+/); // Split input by spaces
+    
+        // Remove period if middle initial is detected
+        for (let i = 0; i < nameParts.length; i++) {
+            nameParts[i] = nameParts[i].replace(/\.$/, ''); // Remove period at the end
+        }
+        
+        let query = "";
+        let params = [];
+    
+        if (searchInput.toLowerCase() === "all") {
+            query = `
+                SELECT 
                     pi.Person_ID, 
                     CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                     pi.Person_Contact, 
@@ -468,11 +476,11 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                 LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
                 LEFT JOIN address a ON pa.Address_ID = a.Address_ID
                 LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
-                LEFT JOIN city c ON b.City_ID = c.City_ID`
-            );
-        } else if (!isNaN(userInput)) {
-            [rows] = await connection.query(
-                `SELECT 
+                LEFT JOIN city c ON b.City_ID = c.City_ID`;
+        } else if (!isNaN(searchInput)) {
+            // If input is a number, search by Person_ID
+            query = `
+                SELECT 
                     pi.Person_ID, 
                     CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                     pi.Person_Contact, 
@@ -487,43 +495,106 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                 LEFT JOIN address a ON pa.Address_ID = a.Address_ID
                 LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
                 LEFT JOIN city c ON b.City_ID = c.City_ID
-                WHERE pi.Person_ID LIKE ?`,
-                [parseInt(userInput)]
-            );
+                WHERE pi.Person_ID = ?`;
+            params = [parseInt(searchInput)];
         } else {
-            [rows] = await connection.query(
-                `SELECT 
-                    pi.Person_ID, 
-                    CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
-                    pi.Person_Contact, 
-                    ps.sex_title AS Person_sex,
-                    a.Person_Street,
-                    b.Brgy_Name,
-                    c.City_Name,
-                    c.Region_Name
-                FROM person_information pi
-                LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
-                LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
-                LEFT JOIN address a ON pa.Address_ID = a.Address_ID
-                LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
-                LEFT JOIN city c ON b.City_ID = c.City_ID
-                WHERE pi.Person_FName LIKE ?`,
-                [`%${userInput}%`]
-            );
+            if (nameParts.length === 1) {
+                // Search by First Name OR Last Name (Handles single-name searches)
+                query = `
+                    SELECT 
+                        pi.Person_ID, 
+                        CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
+                        pi.Person_Contact, 
+                        ps.sex_title AS Person_sex,
+                        a.Person_Street,
+                        b.Brgy_Name,
+                        c.City_Name,
+                        c.Region_Name
+                    FROM person_information pi
+                    LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
+                    LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
+                    LEFT JOIN address a ON pa.Address_ID = a.Address_ID
+                    LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
+                    LEFT JOIN city c ON b.City_ID = c.City_ID
+                    WHERE pi.Person_FName LIKE ? OR pi.Person_LName LIKE ?`;
+                params = [`%${nameParts[0]}%`, `%${nameParts[0]}%`];
+            } else if (nameParts.length === 2) {
+                // Check if input format is First Last or Last First
+                query = `
+                    SELECT 
+                        pi.Person_ID, 
+                        CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
+                        pi.Person_Contact, 
+                        ps.sex_title AS Person_sex,
+                        a.Person_Street,
+                        b.Brgy_Name,
+                        c.City_Name,
+                        c.Region_Name
+                    FROM person_information pi
+                    LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
+                    LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
+                    LEFT JOIN address a ON pa.Address_ID = a.Address_ID
+                    LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
+                    LEFT JOIN city c ON b.City_ID = c.City_ID
+                    WHERE (pi.Person_FName LIKE ? AND pi.Person_LName LIKE ?)
+                       OR (pi.Person_LName LIKE ? AND pi.Person_FName LIKE ?)`;
+                params = [`%${nameParts[0]}%`, `%${nameParts[1]}%`, `%${nameParts[0]}%`, `%${nameParts[1]}%`];
+            } else if (nameParts.length === 3) {
+                const isMiddleInitial = nameParts[1].length === 1;
+    
+                if (isMiddleInitial) {
+                    query = `
+                        SELECT 
+                            pi.Person_ID, 
+                            CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
+                            pi.Person_Contact, 
+                            ps.sex_title AS Person_sex,
+                            a.Person_Street,
+                            b.Brgy_Name,
+                            c.City_Name,
+                            c.Region_Name
+                        FROM person_information pi
+                        LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
+                        LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
+                        LEFT JOIN address a ON pa.Address_ID = a.Address_ID
+                        LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
+                        LEFT JOIN city c ON b.City_ID = c.City_ID
+                        WHERE (pi.Person_FName LIKE ? AND pi.Person_MName LIKE ? AND pi.Person_LName LIKE ?)
+                           OR (pi.Person_LName LIKE ? AND pi.Person_FName LIKE ? AND pi.Person_MName LIKE ?)`;
+                    params = [`%${nameParts[0]}%`, `%${nameParts[1]}%`, `%${nameParts[2]}%`, `%${nameParts[0]}%`, `%${nameParts[2]}%`, `%${nameParts[1]}%`];
+                } else {
+                    query = `
+                        SELECT 
+                            pi.Person_ID, 
+                            CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
+                            pi.Person_Contact, 
+                            ps.sex_title AS Person_sex,
+                            a.Person_Street,
+                            b.Brgy_Name,
+                            c.City_Name,
+                            c.Region_Name
+                        FROM person_information pi
+                        LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
+                        LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
+                        LEFT JOIN address a ON pa.Address_ID = a.Address_ID
+                        LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
+                        LEFT JOIN city c ON b.City_ID = c.City_ID
+                        WHERE pi.Person_FName LIKE ? AND pi.Person_MName LIKE ? AND pi.Person_LName LIKE ?`;
+                    params = [`%${nameParts[0]}%`, `%${nameParts[1]}%`, `%${nameParts[2]}%`];
+                }
+            }
         }
-
+        const [rows] = await connection.query(query, params);
         if (rows.length === 0) {
-            return res.status(404).json({ message: "No tenant found" });
+            return res.status(404).json({ message: "No matching person found" });
         }
-
         res.json(rows);
-
     } catch (error) {
-        console.error("Error searching tenant:", error);
+        console.error(`Error searching tenant for input "${searchInput}":`, error);
         res.status(500).json({ error: "Failed to search tenant" });
     } finally {
         connection.release();
-    }
+    }    
 });
 
 
