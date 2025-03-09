@@ -451,11 +451,22 @@ app.get('/search-tenant/:name', async (req, res) => {
         const name = req.params.name;
 
         const [rows] = await connection.query(
-            `SELECT Person_ID, CONCAT(Person_FName, ' ', COALESCE(Person_MName, ''), ' ', Person_LName) AS FullName, 
-                    Person_Contact, 
-                    Person_sex 
-             FROM person_information 
-             WHERE Person_FName LIKE ?`,
+            `SELECT 
+                pi.Person_ID, 
+                CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
+                pi.Person_Contact, 
+                ps.sex_title AS Person_sex,
+                a.Person_Street,
+                b.Brgy_Name,
+                c.City_Name,
+                c.Region_Name
+            FROM person_information pi
+            LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
+            LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
+            LEFT JOIN address a ON pa.Address_ID = a.Address_ID
+            LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
+            LEFT JOIN city c ON b.City_ID = c.City_ID
+            WHERE pi.Person_FName LIKE ?`,
             [`%${name}%`]
         );
 

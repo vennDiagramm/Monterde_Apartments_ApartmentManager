@@ -605,8 +605,8 @@ document.getElementById('searchButton').addEventListener('click', async () => {
             return;
         }
 
-        // Creating table structure
-        let resultHTML = `
+            // Creating table structure
+            let resultHTML = `
             <table class="search-table">
                 <thead>
                     <tr>
@@ -614,10 +614,14 @@ document.getElementById('searchButton').addEventListener('click', async () => {
                         <th>Full Name</th>
                         <th>Contact</th>
                         <th>Sex</th>
+                        <th>Street</th>
+                        <th>Barangay</th>
+                        <th>City</th>
+                        <th>Region</th>
                     </tr>
                 </thead>
                 <tbody>
-        `;
+            `;
 
         // Adding table rows for each tenant
         data.forEach(tenant => {
@@ -626,7 +630,11 @@ document.getElementById('searchButton').addEventListener('click', async () => {
                     <td>${tenant.Person_ID}</td>
                     <td>${tenant.FullName}</td>
                     <td>${tenant.Person_Contact}</td>
-                    <td>${tenant.Person_sex ? "Male" : "Female"}</td>
+                    <td>${tenant.Person_sex}</td>
+                    <td>${tenant.Person_Street || "N/A"}</td>
+                    <td>${tenant.Brgy_Name || "N/A"}</td>
+                    <td>${tenant.City_Name || "N/A"}</td>
+                    <td>${tenant.Region_Name || "N/A"}</td>
                 </tr>
             `;
         });
@@ -634,6 +642,7 @@ document.getElementById('searchButton').addEventListener('click', async () => {
         resultHTML += `</tbody></table>`; // Closing table structure
 
         searchResults.innerHTML = resultHTML;
+
 
         document.getElementById('searchTenantModal').style.display = 'block';
 
