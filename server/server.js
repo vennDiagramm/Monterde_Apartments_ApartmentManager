@@ -28,32 +28,24 @@ app.get('/rooms', async (req, res) => {
     }
 });
 
-// Get Room list with Room Status Description
+// Get all rooms with status description
 app.get('/viewAll', async (req, res) => {
     try {
-        const [rows] = await db.query(`
-            SELECT r.Room_ID, r.Room_floor, r.Number_of_Renters, r.Room_maxRenters, r.Room_Price,
-                rs.Room_Status_Desc, al.Apt_Location
-                FROM room r
-                LEFT JOIN room_status rs ON r.Room_Status_ID = rs.Room_Status_ID
-                LEFT JOIN apartment_location al ON r.Apt_Loc_ID = al.Apt_Loc_ID;
-        `);
-        res.json(rows);
+        const [rows] = await db.query('CALL GetAllRoomsWithStatus()');
+        res.json(rows[0]); // Note: Results are in the first element of the returned array
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Database error" });
     }
 });
-
+// End of Get all rooms with status description
 
 // Get rooms by aptLocId
 app.get("/getRooms/:aptLocId", async (req, res) => {
     const aptLocId = req.params.aptLocId;
-    const sql = "SELECT Room_ID FROM room WHERE Apt_Loc_ID = ? AND Room_Status_ID = 1";
-
     try {
-        const [results] = await db.query(sql, [aptLocId]);
-        res.json(results);
+        const [results] = await db.query('CALL GetRoomsByAptLocId(?)', [aptLocId]);
+        res.json(results[0]); // Note: Results are in the first element of the returned array
     } catch (err) {
         console.error("Error fetching rooms:", err);
         res.status(500).json({ error: "Database error" });
@@ -64,15 +56,9 @@ app.get("/getRooms/:aptLocId", async (req, res) => {
 // Get Full View of Room via aptLocId
 app.get("/getFullRoomView/:aptLocId", async (req, res) => {
     const aptLocId = req.params.aptLocId;
-    const sql = `SELECT r.Room_ID, r.Room_floor, r.Number_of_Renters, r.Room_maxRenters, r.Room_Price,
-                rs.Room_Status_Desc
-                FROM room r
-                JOIN room_status rs ON r.Room_Status_ID = rs.Room_Status_ID
-                WHERE r.Apt_Loc_ID = ?`;
-
     try {
-        const [results] = await db.query(sql, [aptLocId]);
-        res.json(results);
+        const [results] = await db.query('CALL GetFullRoomViewByAptLocId(?)', [aptLocId]);
+        res.json(results[0]); // Note: Results are in the first element of the returned array
     } catch (err) {
         console.error("Error fetching rooms:", err);
         res.status(500).json({ error: "Database error" });
@@ -80,72 +66,73 @@ app.get("/getFullRoomView/:aptLocId", async (req, res) => {
 });
 // End of Get Full View of Room via aptLocId
 
-// UPDATE room below
+// Update room
 app.post("/updateRoom", async (req, res) => {
     const { room_id, floor, tenants, max_renters, price, status } = req.body;
-    const sql = `
-        UPDATE room 
-        SET Room_floor = ?, Number_of_Renters = ?, Room_maxRenters = ?, 
-            Room_Status_ID = ?, Room_Price = ?
-        WHERE Room_ID = ?`;
-
     try {
-        await db.query(sql, [floor, tenants, max_renters, status, price, room_id]);
-        res.json({ message: "Room updated successfully!" });
+        const [result] = await db.query(
+            'CALL UpdateRoom(?, ?, ?, ?, ?, ?)', 
+            [room_id, floor, tenants, max_renters, price, status]
+        );
+        const affectedRows = result[0][0].affected_rows;
+        if (affectedRows > 0) {
+            res.json({ message: "Room updated successfully!" });
+        } else {
+            res.status(404).json({ message: "Room not found or no changes made" });
+        }
     } catch (err) {
         console.error("Error updating room:", err);
         res.status(500).json({ error: "Database update failed" });
     }
 });
-// End of UPDATE room
+// End of Update room
 
-// add room route
+// Add room
 app.post("/addRoom", async (req, res) => {
     const { floor, tenants, max_renters, status, price, apt_loc } = req.body;
-    const sql = `
-        INSERT INTO room (Room_floor, Number_of_Renters, Room_maxRenters, Room_Status_ID, Room_Price, Apt_Loc_ID) 
-        VALUES (?, ?, ?, ?, ?, ?)`;
     try {
-        await db.query(sql, [floor, tenants, max_renters, status, price, apt_loc]);
-        res.json({ message: "Room added successfully!" });
+        const [result] = await db.query(
+            'CALL AddRoom(?, ?, ?, ?, ?, ?)',
+            [floor, tenants, max_renters, status, price, apt_loc]
+        );
+        const newRoomId = result[0][0].new_room_id;
+        res.json({ 
+            message: "Room added successfully!", 
+            roomId: newRoomId 
+        });
     } catch (err) {
         res.status(500).json({ error: err.message || "Database error" });
     }
 });
-// End of add room route
+// End of Add room
 
-// Delete Room Route
+// Delete Room
 app.delete("/deleteRoom/:id", async (req, res) => {
-    const connection = await db.getConnection();
-
+    const roomId = req.params.id;
     try {
-        await connection.beginTransaction();
-
-        const roomId = req.params.id;
-
-        // Check if the room exists
-        const [[room]] = await connection.query("SELECT 1 FROM room WHERE Room_ID = ?", [roomId]);
-
-        if (!room) {
-            await connection.rollback();
-            return res.status(404).json({ error: "Room does not exists!" });
+        // For procedures with OUT parameters, we need to use a different approach
+        const [result] = await db.query(
+            `SET @success = FALSE; 
+             SET @message = '';
+             CALL DeleteRoom(?, @success, @message);
+             SELECT @success AS success, @message AS message;`,
+            [roomId]
+        );
+        
+        // The result from the SELECT statement will be in the last result set
+        const { success, message } = result[result.length - 1][0];
+        
+        if (success) {
+            res.json({ message });
+        } else {
+            res.status(404).json({ error: message });
         }
-
-        // Delete the room
-        const [result] = await connection.query("DELETE FROM room WHERE Room_ID = ?", [roomId]);
-
-        await connection.commit();
-        res.json({ message: `Room ${roomId} deleted successfully` });
-
     } catch (err) {
-        await connection.rollback();
         console.error(err);
         res.status(500).json({ error: "An error occurred while deleting the room" });
-    } finally {
-        connection.release();
     }
 });
-// End of Delete Room Route
+// End of Delete Room
 
 /**     -------     END OF ROOMS API SECTION      -------     **/
 

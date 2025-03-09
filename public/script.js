@@ -1,3 +1,6 @@
+fetchRooms(); // Fetch rooms on page load
+updateDate(); // Update the date on page load
+
 // Modal Utility Functions
 function openModal(modalId) {
   const modal = document.getElementById(modalId);
@@ -103,10 +106,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Update Rooms available in the dropdown
 document.getElementById("addTenantButton").addEventListener("click", function () {
+    fetchRooms(); 
   updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
 });
 
 document.getElementById("roomsButton").addEventListener("click", function () {
+    fetchRooms();
     updateRoomDropdown(getCurrentApartment()); // Fetch rooms dynamically
   });
 // End of Update  Rooms available in the dropdown
@@ -282,7 +287,7 @@ async function addRoom(event) {
         console.error("Error adding room:", error);
     }
 }
-
+// End of Add Room Function
 
 // Delete Room
 async function deleteRoom(roomId) {
@@ -339,6 +344,7 @@ async function viewAllRooms(rooms) {
         tbody.appendChild(row);
     });
 }
+// End of View All Rooms Function
 
 // Fetch rooms based on the current apartment.
 document.getElementById("viewRooms").addEventListener("click", async function () {
@@ -819,8 +825,6 @@ async function fetchRooms() {
       console.error("Error fetching rooms:", error);
   }
 }
-
-fetchRooms();
 // End of Check Rooms Function
 
 
@@ -839,8 +843,6 @@ function updateDate() {
 
   dateElement.textContent = formattedDate;
 }
-
-updateDate();
 // End of Date Function
 
 
