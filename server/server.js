@@ -451,7 +451,7 @@ app.get('/search-tenant/:name', async (req, res) => {
         const name = req.params.name;
 
         const [rows] = await connection.query(
-            `SELECT CONCAT(Person_FName, ' ', COALESCE(Person_MName, ''), ' ', Person_LName) AS FullName, 
+            `SELECT Person_ID, CONCAT(Person_FName, ' ', COALESCE(Person_MName, ''), ' ', Person_LName) AS FullName, 
                     Person_Contact, 
                     Person_sex 
              FROM person_information 
@@ -467,7 +467,7 @@ app.get('/search-tenant/:name', async (req, res) => {
 
     } catch (error) {
         console.error("Error searching tenant:", error);
-        res.status(500).json({ error: "Failed S Serve to search tenant" });
+        res.status(500).json({ error: "Failed to search tenant" });
     } finally {
         connection.release();
     }

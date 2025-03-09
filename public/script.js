@@ -603,7 +603,7 @@ document.getElementById('searchButton').addEventListener('click', async () => {
         } else {
             let resultHTML = `<ul>`;
             data.forEach(tenant => {
-                resultHTML += `<li><strong>${tenant.FullName}</strong> - ${tenant.Person_Contact} - ${tenant.Person_sex ? "Male" : "Female"}</li>`;
+                resultHTML += `<li>${tenant.Person_ID} - <strong>${tenant.FullName}</strong> - ${tenant.Person_Contact} - ${tenant.Person_sex ? "Male" : "Female"}</li>`;
             });
             resultHTML += `</ul>`;
             document.getElementById('searchResults').innerHTML = resultHTML;
@@ -613,7 +613,7 @@ document.getElementById('searchButton').addEventListener('click', async () => {
 
     } catch (error) {
         console.error("Error searching tenant:", error);
-        alert("Failed S Cript to search tenant.");
+        alert("Failed to search tenant.");
     }
 });
 
