@@ -159,6 +159,7 @@ html, body {
 .tenant-request {
     display: flex;
     align-items: center;
+    gap: 10px;
     padding: 5px;
     width: 99%;
     position: relative;
@@ -302,3 +303,62 @@ tr:hover {
     border-radius: 10px;
 }
 
+/* Search */
+.search-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.search-table th, .search-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.search-table th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+.search-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+#searchTenantModal {
+    display: none; 
+    position: fixed;
+    z-index: 1000;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+}
+
+#nameSearch {
+    padding-right: 10px;
+}
+
+#searchButton {
+    background-color: #28c06c; /* Green color */
+    color: white; /* White text */
+    border: none; /* Remove default border */
+    padding: 10px 20px; /* Padding for better size */
+    border-radius: 20px; /* Rounded corners */
+    font-size: 16px; /* Adjust font size */
+    cursor: pointer; /* Make it clickable */
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover effect */
+#searchButton:hover {
+    background-color: #218838; /* Darker green on hover */
+    transform: scale(1.05); /* Slightly increase size */
+}
+
+/* Active effect (when clicking) */
+#searchButton:active {
+    background-color: #1e7e34;
+    transform: scale(0.98); /* Slightly shrink when clicked */
+}

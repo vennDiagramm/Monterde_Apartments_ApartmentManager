@@ -598,16 +598,42 @@ document.getElementById('searchButton').addEventListener('click', async () => {
         const response = await fetch(`http://localhost:3000/search-tenant/${name}`);
         const data = await response.json();
 
-        if (response.status === 404) {
-            document.getElementById('searchResults').innerHTML = `<p>No tenant found.</p>`;
-        } else {
-            let resultHTML = `<ul>`;
-            data.forEach(tenant => {
-                resultHTML += `<li>${tenant.Person_ID} - <strong>${tenant.FullName}</strong> - ${tenant.Person_Contact} - ${tenant.Person_sex ? "Male" : "Female"}</li>`;
-            });
-            resultHTML += `</ul>`;
-            document.getElementById('searchResults').innerHTML = resultHTML;
+        const searchResults = document.getElementById('searchResults');
+
+        if (response.status === 404 || data.length === 0) {
+            searchResults.innerHTML = `<p>No tenant found.</p>`;
+            return;
         }
+
+        // Creating table structure
+        let resultHTML = `
+            <table class="search-table">
+                <thead>
+                    <tr>
+                        <th>Person ID</th>
+                        <th>Full Name</th>
+                        <th>Contact</th>
+                        <th>Sex</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        // Adding table rows for each tenant
+        data.forEach(tenant => {
+            resultHTML += `
+                <tr>
+                    <td>${tenant.Person_ID}</td>
+                    <td>${tenant.FullName}</td>
+                    <td>${tenant.Person_Contact}</td>
+                    <td>${tenant.Person_sex ? "Male" : "Female"}</td>
+                </tr>
+            `;
+        });
+
+        resultHTML += `</tbody></table>`; // Closing table structure
+
+        searchResults.innerHTML = resultHTML;
 
         document.getElementById('searchTenantModal').style.display = 'block';
 
@@ -616,6 +642,7 @@ document.getElementById('searchButton').addEventListener('click', async () => {
         alert("Failed to search tenant.");
     }
 });
+
 
 // Close modal logic
 document.querySelector('.close-button').addEventListener('click', () => {
