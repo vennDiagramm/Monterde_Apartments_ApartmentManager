@@ -443,6 +443,36 @@ app.post("/process-payment", async (req, res) => {
 });
 /**     -------     END OF TENANTS API SECTION      -------     **/
 
+// Search Function
+app.get('/search-tenant/:name', async (req, res) => {
+    const connection = await db.getConnection();
+
+    try {
+        const name = req.params.name;
+
+        const [rows] = await connection.query(
+            `SELECT CONCAT(Person_FName, ' ', COALESCE(Person_MName, ''), ' ', Person_LName) AS FullName, 
+                    Person_Contact, 
+                    Person_sex 
+             FROM person_information 
+             WHERE Person_FName LIKE ?`,
+            [`%${name}%`]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "No tenant found" });
+        }
+
+        res.json(rows);
+
+    } catch (error) {
+        console.error("Error searching tenant:", error);
+        res.status(500).json({ error: "Failed to search tenant" });
+    } finally {
+        connection.release();
+    }
+});
+
 
 // 🔹 Start the Server
 app.listen(port, () => {

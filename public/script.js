@@ -586,9 +586,42 @@ async function editTenant(event) {
 
 
 // Search button testing
-document.getElementById('searchButton').addEventListener('click', () => {
-    console.log("Search button clicked!");
+document.getElementById('searchButton').addEventListener('click', async () => {
+    const name = document.getElementById('nameSearch').value.trim();
+    
+    if (!name) {
+        alert("Please enter a tenant's first name!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/search-tenant/${name}`);
+        const data = await response.json();
+
+        if (response.status === 404) {
+            document.getElementById('searchResults').innerHTML = `<p>No tenant found.</p>`;
+        } else {
+            let resultHTML = `<ul>`;
+            data.forEach(tenant => {
+                resultHTML += `<li><strong>${tenant.FullName}</strong> - ${tenant.Person_Contact} - ${tenant.Person_sex ? "Male" : "Female"}</li>`;
+            });
+            resultHTML += `</ul>`;
+            document.getElementById('searchResults').innerHTML = resultHTML;
+        }
+
+        document.getElementById('searchTenantModal').style.display = 'block';
+
+    } catch (error) {
+        console.error("Error searching tenant:", error);
+        alert("Failed to search tenant.");
+    }
 });
+
+// Close modal logic
+document.querySelector('.close-button').addEventListener('click', () => {
+    document.getElementById('searchTenantModal').style.display = 'none';
+});
+
 // End of Search button testing
 
 // Update Room Details
