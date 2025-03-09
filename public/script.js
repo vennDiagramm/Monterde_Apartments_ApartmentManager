@@ -613,7 +613,7 @@ document.getElementById('searchButton').addEventListener('click', async () => {
 
     } catch (error) {
         console.error("Error searching tenant:", error);
-        alert("Failed to search tenant.");
+        alert("Failed S Cript to search tenant.");
     }
 });
 

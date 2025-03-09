@@ -467,7 +467,7 @@ app.get('/search-tenant/:name', async (req, res) => {
 
     } catch (error) {
         console.error("Error searching tenant:", error);
-        res.status(500).json({ error: "Failed to search tenant" });
+        res.status(500).json({ error: "Failed S Serve to search tenant" });
     } finally {
         connection.release();
     }
