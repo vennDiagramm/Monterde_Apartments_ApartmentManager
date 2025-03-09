@@ -656,6 +656,30 @@ async function updateRoom(event) {
 }
 // End of Update Room Details Function
 
+/// Payment Function
+let rentPrice = 0; //global variable for payment
+// Retrieve Rent Price
+async function getRentPrice(event) {
+  try {
+      const personId = document.getElementById("personId").value;
+      const roomId = document.getElementById("roomId").value;
+
+      const response = await fetch(`http://localhost:3000/get-rent-price?personId=${personId}&roomId=${roomId}`);
+      if (!response.ok) throw new Error("Failed to fetch room price");
+
+      // Retrieve data and store rent price
+      const data = await response.json();
+      rentPrice = parseFloat(data.rent_price).toFixed(2);
+
+      // Display rent price in payment modal
+      document.getElementById("rentPrice").innerHTML = rentPrice.toFixed(2); 
+
+  } catch (error) {
+      console.error(error);
+      alert("Error fetching rent price: " + error.message);
+  }
+}
+
 // Payment Process
 async function paymentProcess(event) {
     try {
@@ -733,6 +757,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalButtons.addTenant.addEventListener('click', () => openModal('addTenantModal'));
     modalButtons.removeTenant.addEventListener('click', () => openModal('removeTenantModal'));
     modalButtons.editTenant.addEventListener('click', () => openModal('editTenantModal'));
+    modalButtons.payment.addEventListener('click', () => openModal('paymentModal'));
     modalButtons.rooms.addEventListener('click', () => {
         openModal('roomsModal');
           
@@ -748,8 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (this.value < 0) this.value = 0; // Ensure no negative values
                 });
             }
-        });
-    modalButtons.payment.addEventListener('click', () => openModal('paymentModal'));        
+        });  
 
         // Ensure room price input allows only two decimal places & no negatives
         if (priceInput) {
