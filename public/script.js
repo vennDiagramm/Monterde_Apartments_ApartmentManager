@@ -584,29 +584,69 @@ async function editTenant(event) {
 }
 // End of Edit Tenant Details Function
 
+// TESTING THIS CURRENT FUNCTION
+async function sendCurrentApartment() {
+    let currentApartment = getCurrentApartment(); // Get full apartment name
+    currentApartment = currentApartment.split(" ")[0]; // Get only the first word
+
+    try {
+        const response = await fetch("http://localhost:3000/set-current-apartment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ apartment: currentApartment }),
+        });
+        if (!response.ok) {
+            throw new Error("Failed to send current apartment.");
+        }
+        console.log(`Current apartment (${currentApartment}) sent successfully.`);
+    } catch (error) {
+        console.error("Error sending current apartment:", error);
+    }
+}
+
+
+// Call this function when the page loads
+window.onload = sendCurrentApartment;
+
+// Listen for changes in the apartment slider
+document.querySelector('.next').addEventListener('click', () => {
+    console.log("Next button clicked");
+    setTimeout(sendCurrentApartment, 200); // Delay to ensure the apartment updates first
+});
+
+document.querySelector('.prev').addEventListener('click', () => {
+    console.log("Prev button clicked");
+    setTimeout(sendCurrentApartment, 200); // Delay to ensure the apartment updates first
+});
 
 // Search button testing
 document.getElementById('searchButton').addEventListener('click', async () => {
     const userInput = document.getElementById('nameSearch').value.trim();
-    
+
     if (!userInput) {
         alert("Please enter a tenant's first name!");
         return;
     }
 
     try {
+        // Send search request to backend with apartment name
         const response = await fetch(`http://localhost:3000/search-tenant/${userInput}`);
         const data = await response.json();
 
         const searchResults = document.getElementById('searchResults');
-        console.log(data);
+        console.log("WETWERFWEFWEF", data);
+
         if (response.status === 404 || data.length === 0) {
             alert("No Tenant Found!");
             return;
         }
-
-            // Creating table structure
-            let resultHTML = `
+        
+        if (data[0].apt_location.split(" ")[0] !== getCurrentApartment().split(" ")[0]) {
+            alert("Tenant not found in this apartment.");
+            return;
+        }
+        // Creating table structure
+        let resultHTML = `
             <table class="search-table">
                 <thead>
                     <tr>
@@ -618,10 +658,13 @@ document.getElementById('searchButton').addEventListener('click', async () => {
                         <th>Barangay</th>
                         <th>City</th>
                         <th>Region</th>
+                        <th>Room Number</th>
+                        <th>Apartment Location</th>
+                        <th>Move-In Date</th>
                     </tr>
                 </thead>
                 <tbody>
-            `;
+        `;
 
         // Adding table rows for each tenant
         data.forEach(tenant => {
@@ -635,6 +678,9 @@ document.getElementById('searchButton').addEventListener('click', async () => {
                     <td>${tenant.Brgy_Name || "N/A"}</td>
                     <td>${tenant.City_Name || "N/A"}</td>
                     <td>${tenant.Region_Name || "N/A"}</td>
+                    <td>${tenant.room_id || "N/A"}</td>
+                    <td>${tenant.apt_location || "N/A"}</td>
+                    <td>${tenant.actual_move_in_date || "N/A"}</td>
                 </tr>
             `;
         });
@@ -642,7 +688,6 @@ document.getElementById('searchButton').addEventListener('click', async () => {
         resultHTML += `</tbody></table>`; // Closing table structure
 
         searchResults.innerHTML = resultHTML;
-
 
         document.getElementById('searchTenantModal').style.display = 'block';
 

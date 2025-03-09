@@ -304,6 +304,14 @@ tr:hover {
 }
 
 /* Search */
+.search-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 100%;
+    border-radius: 10px;
+    position: relative;
+}
 .search-table {
     width: 100%;
     border-collapse: collapse;
