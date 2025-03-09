@@ -117,6 +117,7 @@ document.getElementById("roomsButton").addEventListener("click", function () {
 // End of Update  Rooms available in the dropdown
 
 
+
 // Populate the room table with room details
 async function populateRoomTable(rooms) {
     const tbody = document.getElementById('roomTable').querySelector('tbody');
@@ -582,6 +583,13 @@ async function editTenant(event) {
     }
 }
 // End of Edit Tenant Details Function
+
+
+// Search button testing
+document.getElementById('searchButton').addEventListener('click', () => {
+    console.log("Search button clicked!");
+});
+// End of Search button testing
 
 // Update Room Details
 async function updateRoom(event) {

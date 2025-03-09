@@ -52,8 +52,16 @@
         <!-- Tenant Request Input -->
         <!-- Last task if kaya pa: ang data aning requests is gikan kay gmail -->
         <footer class="tenant-request">
-            <i class="fas fa-envelope"></i>
-            <input type="text" class = "requests-bar" placeholder="Tenant Requests: Hello I would like...">
+            <input type="text" id="nameSearch" placeholder="Search Tenant Name...">
+            <button id="searchButton">Search</button>
+
+            <div id="searchTenantModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h2>Search Tenant</h2>
+                    <div id="searchResults"></div> <!-- This will display the search results -->
+                </div>
+            </div>
         </footer>
 
         <!-- Add Tenant Modal -->
