@@ -587,21 +587,21 @@ async function editTenant(event) {
 
 // Search button testing
 document.getElementById('searchButton').addEventListener('click', async () => {
-    const name = document.getElementById('nameSearch').value.trim();
+    const userInput = document.getElementById('nameSearch').value.trim();
     
-    if (!name) {
+    if (!userInput) {
         alert("Please enter a tenant's first name!");
         return;
     }
 
     try {
-        const response = await fetch(`http://localhost:3000/search-tenant/${name}`);
+        const response = await fetch(`http://localhost:3000/search-tenant/${userInput}`);
         const data = await response.json();
 
         const searchResults = document.getElementById('searchResults');
-
+        console.log(data);
         if (response.status === 404 || data.length === 0) {
-            searchResults.innerHTML = `<p>No tenant found.</p>`;
+            alert("No Tenant Found!");
             return;
         }
 
