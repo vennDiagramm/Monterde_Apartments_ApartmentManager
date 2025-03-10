@@ -498,8 +498,8 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                     COALESCE(MIN(c.City_Name), 'Unknown') AS City_Name, 
                     COALESCE(MIN(c.Region_Name), 'Unknown') AS Region_Name, 
                     COALESCE(MIN(r.room_id), 'No Room') AS room_id,  
-                    al.apt_location,  
-                    COALESCE(MIN(cd.actual_move_in_date), '0000-00-00') AS actual_move_in_date 
+                    al.apt_location,
+                    COALESCE(MIN(DATE(cd.actual_move_in_date)), '0000-00-00') AS actual_move_in_date 
                 FROM person_information pi
                 LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
                 LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
@@ -512,7 +512,6 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                 LEFT JOIN contract_details cd ON ct.contract_id = cd.contract_details_id
                 WHERE al.apt_location = ?
                 GROUP BY pi.Person_ID
-                LIMIT 3;
             `;
                 params = [apartment];
         } else if (!isNaN(searchInput)) {
@@ -523,13 +522,13 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                     CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                     pi.Person_Contact, 
                     ps.sex_title AS Person_sex,
-                    a.Person_Street,
-                    b.Brgy_Name,
-                    c.City_Name,
-                    c.Region_Name,
-                    r.room_id,
-                    al.apt_location,
-                    cd.actual_move_in_date
+                    COALESCE(MIN(a.Person_Street), 'Unknown') AS Person_Street,  
+                    COALESCE(MIN(b.Brgy_Name), 'Unknown') AS Brgy_Name, 
+                    COALESCE(MIN(c.City_Name), 'Unknown') AS City_Name, 
+                    COALESCE(MIN(c.Region_Name), 'Unknown') AS Region_Name, 
+                    COALESCE(MIN(r.room_id), 'No Room') AS room_id,  
+                    MIN(al.apt_location) AS apt_location,  
+                    COALESCE(MIN(DATE(cd.actual_move_in_date)), '0000-00-00') AS actual_move_in_date 
                 FROM person_information pi
                 LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
                 LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
@@ -541,7 +540,7 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                 LEFT JOIN room r ON al.apt_loc_id = r.apt_loc_id
                 LEFT JOIN contract_details cd ON ct.contract_id = cd.contract_details_id
                 WHERE pi.Person_ID = ? AND al.apt_location = ?
-                LIMIT 1;
+                GROUP BY pi.Person_ID, al.apt_location
             `;
             params = [parseInt(searchInput), apartment];
         } else {
@@ -553,13 +552,13 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                         CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                         pi.Person_Contact, 
                         ps.sex_title AS Person_sex,
-                        a.Person_Street,
-                        b.Brgy_Name,
-                        c.City_Name,
-                        c.Region_Name,
-                        r.room_id,
-                        al.apt_location,
-                        cd.actual_move_in_date
+                        COALESCE(MIN(a.Person_Street), 'Unknown') AS Person_Street,  
+                        COALESCE(MIN(b.Brgy_Name), 'Unknown') AS Brgy_Name, 
+                        COALESCE(MIN(c.City_Name), 'Unknown') AS City_Name, 
+                        COALESCE(MIN(c.Region_Name), 'Unknown') AS Region_Name, 
+                        COALESCE(MIN(r.room_id), 'No Room') AS room_id,  
+                        MIN(al.apt_location) AS apt_location,  
+                        COALESCE(MIN(DATE(cd.actual_move_in_date)), '0000-00-00') AS actual_move_in_date 
                     FROM person_information pi
                     LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
                     LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
@@ -571,7 +570,8 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                     LEFT JOIN room r ON al.apt_loc_id = r.apt_loc_id
                     LEFT JOIN contract_details cd ON ct.contract_id = cd.contract_details_id
                     WHERE pi.Person_FName LIKE ? OR pi.Person_LName LIKE ?
-                    AND al.apt_location = ? LIMIT 1
+                    AND al.apt_location = ?
+                    GROUP BY pi.Person_ID, al.apt_location
                 `;
                 params = [`%${nameParts[0]}%`, `%${nameParts[0]}%`, apartment];
             } else if (nameParts.length === 2) {
@@ -582,13 +582,13 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                         CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                         pi.Person_Contact, 
                         ps.sex_title AS Person_sex,
-                        a.Person_Street,
-                        b.Brgy_Name,
-                        c.City_Name,
-                        c.Region_Name,
-                        r.room_id,
-                        al.apt_location,
-                        cd.actual_move_in_date
+                        COALESCE(MIN(a.Person_Street), 'Unknown') AS Person_Street,  
+                        COALESCE(MIN(b.Brgy_Name), 'Unknown') AS Brgy_Name, 
+                        COALESCE(MIN(c.City_Name), 'Unknown') AS City_Name, 
+                        COALESCE(MIN(c.Region_Name), 'Unknown') AS Region_Name, 
+                        COALESCE(MIN(r.room_id), 'No Room') AS room_id,  
+                        MIN(al.apt_location) AS apt_location,  
+                        COALESCE(MIN(DATE(cd.actual_move_in_date)), '0000-00-00') AS actual_move_in_date 
                     FROM person_information pi
                     LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
                     LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
@@ -601,7 +601,8 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                     LEFT JOIN contract_details cd ON ct.contract_id = cd.contract_details_id
                     WHERE (pi.Person_FName LIKE ? AND pi.Person_LName LIKE ?)
                        OR (pi.Person_LName LIKE ? AND pi.Person_FName LIKE ?)
-                       AND al.apt_location = ? LIMIT 1
+                       AND al.apt_location = ?
+                    GROUP BY pi.Person_ID, al.apt_location
                     `;
                 params = [`%${nameParts[0]}%`, `%${nameParts[1]}%`, `%${nameParts[0]}%`, `%${nameParts[1]}%`, apartment];
             } else if (nameParts.length === 3) {
@@ -614,13 +615,13 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                             CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                             pi.Person_Contact, 
                             ps.sex_title AS Person_sex,
-                            a.Person_Street,
-                            b.Brgy_Name,
-                            c.City_Name,
-                            c.Region_Name,
-                            r.room_id,
-                            al.apt_location,
-                            cd.actual_move_in_date
+                            COALESCE(MIN(a.Person_Street), 'Unknown') AS Person_Street,  
+                            COALESCE(MIN(b.Brgy_Name), 'Unknown') AS Brgy_Name, 
+                            COALESCE(MIN(c.City_Name), 'Unknown') AS City_Name, 
+                            COALESCE(MIN(c.Region_Name), 'Unknown') AS Region_Name, 
+                            COALESCE(MIN(r.room_id), 'No Room') AS room_id,  
+                            MIN(al.apt_location) AS apt_location, 
+                            COALESCE(MIN(DATE(cd.actual_move_in_date)), '0000-00-00') AS actual_move_in_date 
                         FROM person_information pi
                         LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
                         LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
@@ -634,6 +635,7 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                         WHERE (pi.Person_FName LIKE ? AND pi.Person_MName LIKE ? AND pi.Person_LName LIKE ?)
                            OR (pi.Person_LName LIKE ? AND pi.Person_FName LIKE ? AND pi.Person_MName LIKE ?)
                            AND al.apt_location = ?
+                        GROUP BY pi.Person_ID, al.apt_location
                         `;
                     params = [`%${nameParts[0]}%`, `%${nameParts[1]}%`, `%${nameParts[2]}%`, `%${nameParts[0]}%`, `%${nameParts[2]}%`, `%${nameParts[1]}%`, apartment];
                 } else {
@@ -643,21 +645,26 @@ app.get('/search-tenant/:userInput', async (req, res) => {
                             CONCAT(pi.Person_FName, ' ', COALESCE(pi.Person_MName, ''), ' ', pi.Person_LName) AS FullName, 
                             pi.Person_Contact, 
                             ps.sex_title AS Person_sex,
-                            a.Person_Street,
-                            b.Brgy_Name,
-                            c.City_Name,
-                            c.Region_Name,
-                            r.room_id,
-                            al.apt_location,
-                            cd.actual_move_in_date
+                            COALESCE(MIN(a.Person_Street), 'Unknown') AS Person_Street,  
+                            COALESCE(MIN(b.Brgy_Name), 'Unknown') AS Brgy_Name, 
+                            COALESCE(MIN(c.City_Name), 'Unknown') AS City_Name, 
+                            COALESCE(MIN(c.Region_Name), 'Unknown') AS Region_Name, 
+                            COALESCE(MIN(r.room_id), 'No Room') AS room_id,  
+                            MIN(al.apt_location) AS apt_location, 
+                            COALESCE(MIN(DATE(cd.actual_move_in_date)), '0000-00-00') AS actual_move_in_date 
                         FROM person_information pi
                         LEFT JOIN person_sex ps ON pi.Person_sex = ps.sex_id
                         LEFT JOIN person_address pa ON pi.Person_ID = pa.Person_ID
                         LEFT JOIN address a ON pa.Address_ID = a.Address_ID
                         LEFT JOIN barangay b ON a.Brgy_ID = b.Brgy_ID
                         LEFT JOIN city c ON b.City_ID = c.City_ID
+                        LEFT JOIN contract ct ON pi.Person_ID = ct.Person_ID
+                        LEFT JOIN apartment_location al ON ct.apt_loc_id = al.apt_loc_id
+                        LEFT JOIN room r ON al.apt_loc_id = r.apt_loc_id
+                        LEFT JOIN contract_details cd ON ct.contract_id = cd.contract_details_id
                         WHERE pi.Person_FName LIKE ? AND pi.Person_MName LIKE ? AND pi.Person_LName LIKE ?
-                        AND al.apt_location = ? LIMIT 1
+                        AND al.apt_location = ?
+                        GROUP BY pi.Person_ID, al.apt_location
                         `;
                     params = [`%${nameParts[0]}%`, `%${nameParts[1]}%`, `%${nameParts[2]}%`, apartment];
                 }
