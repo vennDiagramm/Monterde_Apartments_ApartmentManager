@@ -341,26 +341,39 @@
                 <h2>Payment</h2>
                 <form id="paymentForm">
                     <div class="form-group">
-                        <label for="personId">Enter Person ID: </label>
-                        <input type="number" id="personId" required>
+                        <label for="personIdP">Enter Person ID:</label>
+                        <input type="number" id="personIdP" required>
                     </div>
                     <div class="form-group">
-                        <label for="roomId">Enter Room Number: </label>
+                        <label for="roomId">Enter Room Number:</label>
                         <input type="number" id="roomId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meterStart">Meter (Previous): </label>
+                        <input type="number" id="meterStart" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meterEnd">Meter (Current): </label>
+                        <input type="number" id="meterEnd" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="roomId">Enter Number of Renters: </label>
+                        <input type="number" id="numRenters" required>
                     </div>
                     <button type="button" id="confirmButton">Confirm</button>
 
-                    <div id="rentSection" class="form-group" style="display: none;">
+                    <div id="rentSection" class="form-group" style="display: none ;">
                         <br>
-                        <h2>Rent: <span id="rentPrice">0</span></h3>
-                        <br>    
-                        <label for="payment">Enter Payment: </label>
-                        <input type="number" id="payment" required>
-                        <label for="remarks">Enter Remarks: </label>
-                        <input type="text" id="remarks">
-                        <br>
+                        <h2>Total Rent: <span id="rentPrice">0</span></h3>
+                        <div class="form-group">
+                            <label for="payment">Enter Payment: </label>
+                            <input type="number" id="payment" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="remarks">Enter Remarks: </label>
+                            <input type="text" id="remarks">
+                        </div>
                         <button type="submit">Pay</button>
-                        <br>
                         <h3>Change: <span id="change">0</span></h3>
                     </div>
                 </form> 

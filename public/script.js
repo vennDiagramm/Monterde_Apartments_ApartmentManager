@@ -781,45 +781,78 @@ async function updateRoom(event) {
 /// Payment Function
 let rentPrice = 0; //global variable for payment
 // Retrieve Rent Price
-async function getRentPrice(event) {
-  try {
-      const personId = document.getElementById("personId").value;
-      const roomId = document.getElementById("roomId").value;
+async function getRentPrice() {
+    try {   
+        let personIdP = Number(document.getElementById("personIdP").value);
+        let roomId = Number(document.getElementById("roomId").value);
 
-      const response = await fetch(`http://localhost:3000/get-rent-price?personId=${personId}&roomId=${roomId}`);
-      if (!response.ok) throw new Error("Failed to fetch room price");
+        
+        // Check values if numbers or valid 
+        if (!roomId || isNaN(roomId) || roomId <= 0) {
+            alert("Invalid Room ID.");
+            return;
+        }
+        if (!personId || isNaN(personIdP) || personIdP <= 0) {
+            alert("Invalid Person ID.");
+            return;
+        }
+        
 
-      // Retrieve data and store rent price
-      const data = await response.json();
-      rentPrice = parseFloat(data.rent_price).toFixed(2);
+        const response = await fetch(`http://localhost:3000/get-room-price?personId=${personIdP}&roomId=${roomId}`);
 
-      // Display rent price in payment modal
-      document.getElementById("rentPrice").innerHTML = rentPrice.toFixed(2); 
+        if (!response.ok) throw new Error("Failed to fetch room price");
 
-  } catch (error) {
-      console.error(error);
-      alert("Error fetching rent price: " + error.message);
-  }
+        const data = await response.json();
+        rentPrice = Number(data.rent_price); // Store rent price globally
+
+         // Fetch Electric Bill
+        try {
+            const meterStart = Number(document.getElementById("meterStart").value.trim());
+            const meterEnd = Number(document.getElementById("meterEnd").value.trim());
+            const numRenters = Number(document.getElementById("numRenters").value.trim());
+
+            if (isNaN(meterStart) || isNaN(meterEnd) || isNaN(numRenters)) {
+                throw new Error("Invalid meter readings or renters count.");
+            }
+
+            const electricResponse = await fetch(`http://localhost:3000/calculate-electric-bill?prev_meter=${meterStart}&current_meter=${meterEnd}&num_renters=${numRenters}`);
+            if (!electricResponse.ok) throw new Error("Failed to fetch electric bill.");
+
+            const electricData = await electricResponse.json();
+            const electricBill = Number(electricData.total_bill); // Parsed electric bill
+
+            // Calculate Total Rent
+            rentPrice += electricBill;
+
+            // Update UI
+            document.getElementById("rentPrice").innerText = rentPrice.toFixed(2);
+        } catch (error) {
+            console.error("Error fetching electric bill:", error);
+        }
+    } catch (error) {
+        console.error("Error fetching rent price:", error);
+    }
 }
+
 
 // Payment Process
 async function paymentProcess(event) {
+    event.preventDefault(); 
     try {
       const payment = parseFloat(document.getElementById("payment").value);
-      const remarks = document.getElementById("remarks").value
-      
-      //Checks if valid
-      if (!payment || payment < rentPrice) {
+      const remarks = document.getElementById("remarks").value;
+
+      //Checks if valid inputs
+      if (!payment || payment < rentPrice ) {
         alert("Enter a valid amount greater than or equal to the rent price.");
         return;
       }
-  
+
       //Payment change calculation
       const change = payment - rentPrice;
-      alert(`Payment successful! Change: ${change.toFixed(2)}`);
   
       // Send payment data to the server
-      const response = await fetch("/payment-process", {
+      const response = await fetch("/process-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -855,10 +888,10 @@ confirmButton.addEventListener("click", async () => {
         document.getElementById("rentSection").style.display = "block"; // Show payment section
       } else {
         document.getElementById("rentSection").style.display = "none"; // Hide payment section
-      }
+    }
 });
 
-  // End of Payment Function
+// End of Payment Function
 
 // Setup Event Listeners -- para click sa modal, popup ang modal
 document.addEventListener('DOMContentLoaded', () => {
@@ -939,7 +972,7 @@ updateRoomForm.addEventListener('submit', updateRoom);
 const addRoomForm = document.getElementById('addRoomForm');
 addRoomForm.addEventListener('submit', addRoom);
 
-const deleteRoomForm = document.getElementById('deleteRoomForm');
+const   RoomForm = document.getElementById('deleteRoomForm');
 deleteRoomForm.addEventListener('submit', async function(event) {
     event.preventDefault();
     const roomId = document.getElementById("roomIdDelete").value;
@@ -1022,4 +1055,3 @@ function showSlides(n) {
   dots[slideIndex-1].className += " active";
 }
 /**  ----------------------     END OF IMAGE SLIDERS    ----------------------     **/
-

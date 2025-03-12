@@ -371,43 +371,40 @@ app.get('/get-person-name/:personId', async (req, res) => {
 
 //Payment route
 // Fetch Rent Price for Payment Process
-app.get('/get-rent-price', async (req, res) => {
+app.get('/get-room-price', async (req, res) => {
     const { personId, roomId } = req.query;
 
-    if (!personId) {
-        return res.status(400).json({ error: 'personId is required' });
-    }
-    if (!roomId) {
-        return res.status(400).json({ error: 'roomId is required' });
-    }
-
+    if (isNaN(personId) || isNaN(roomId)) {
+        alert("Please enter valid Person ID and Room Number");
+        return;
+    }    
 
     try {
         const query = `
-            SELECT cb.total_bill AS rent_price
-            FROM Contract_Bill cb
-            JOIN Contract_Details cd ON cb.Contract_Details_ID = cd.Contract_Details_ID
-            JOIN Contract c ON cd.Contract_Details_ID = c.Contract_ID
-            WHERE c.person_ID = ? AND cd.Room_ID = ?
+            SELECT Room_Price 
+            FROM contract_details 
+            WHERE Contract_Details_ID = ? AND Room_ID = ?
         `;
 
         const [rows] = await db.execute(query, [personId, roomId]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ error: 'No rent price found for this personId or roomId' });
+            return res.status(404).json({ error: 'No room price found for this personId or roomId' });
         }
 
-        res.json({ rent_price: rows[0].rent_price });
+        const rentPrice = rows[0]?.Room_Price || 0;
+        res.json({ rent_price: rentPrice });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
+
     }
 });
 
 // Payment Process
 app.post("/process-payment", async (req, res) => {
     const { personId, roomId, amountPaid, remarks } = req.body;
-
+    
     if (!personId || !roomId || !amountPaid) {
         return res.status(400).json({ error: "Missing required fields: personId, roomId, or amountPaid" });
     }
@@ -441,6 +438,43 @@ app.post("/process-payment", async (req, res) => {
         res.json({ success: true, message: "Payment recorded successfully!" });
     });
 });
+//End of payment
+
+//Calculate Electricbill
+app.get('/calculate-electric-bill', async (req, res) => {
+    const { prev_meter, current_meter, num_renters } = req.query;
+
+    if (!prev_meter || !current_meter || !num_renters) {
+        return res.status(400).json({ error: "prev_meter, current_meter, and num_renters are required." });
+    }
+
+    try {
+        const query = "SELECT calculateElectricBill(?, ?, ?) AS total_bill";
+        const [rows] = await db.execute(query, [prev_meter, current_meter, num_renters]);
+
+        if (!rows.length || !rows[0].total_bill) {
+            return res.status(404).json({ error: "Failed to calculate electric bill." });
+        }
+
+        res.json({ total_bill: rows[0].total_bill });
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ error: "Server error while calculating electric bill." });
+    }
+});
+
+// Get tenant information
+app.get('/getTenantInfo', async (req, res) => {
+    try {
+        const [rows] = await db.query('CALL GetTenantInformation()');
+        res.json(rows[0]); // Note: Results are in the first element of the returned array
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error" });
+    }
+});
+// End of Get tenant information
+
 /**     -------     END OF TENANTS API SECTION      -------     **/
 
 let currentApartment = ""; // Store globally
