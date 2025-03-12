@@ -403,6 +403,8 @@ app.get('/get-room-price', async (req, res) => {
 
 // Payment Process
 app.post("/process-payment", async (req, res) => {
+    console.log("ASJFEWWERNWEEFNJE");
+    
     const { personId, roomId, amountPaid, remarks } = req.body;
     
     if (!personId || !roomId || !amountPaid) {
@@ -412,31 +414,33 @@ app.post("/process-payment", async (req, res) => {
     // If remarks is empty or undefined, set it to NULL
     const remarksValue = remarks && remarks.trim() !== "" ? remarks : null;
 
-    const sql = `
-        INSERT INTO Payment (Contract_Bill_ID, Date, Amount, Remarks)
-        SELECT 
-            cb.Contract_Bill_ID, 
-            CURDATE() AS Date, 
-            ? AS Amount, 
-            ? AS Remarks
-        FROM Contract_Bill cb
-        JOIN Contract_Details cd ON cb.Contract_Details_ID = cd.Contract_Details_ID
-        JOIN Contract c ON c.Contract_ID = cd.Contract_Details_ID
-        WHERE c.Person_ID = ? AND cd.Room_ID = ?
-    `;
+    try {
+        // Step 1: Get the latest Contract_Bill_ID
+        const [results] = await db.query(
+            `SELECT contract_Bill_ID, contract_date FROM contract_bill ORDER BY contract_date DESC LIMIT 1`
+        );
 
-    db.query(sql, [amountPaid, remarksValue, personId, roomId], (err, result) => {
-        if (err) {
-            console.error("Database error:", err);
-            return res.status(500).json({ error: "Database error while processing payment" });
+        if (results.length === 0) {
+            return res.status(404).json({ error: "No Contract_Bill_ID found" });
         }
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ error: "No matching contract found for the given personId and roomId" });
-        }
+        const contractBillId = results[0].contract_Bill_ID;
+        const contractDate = results[0].contract_date;
 
-        res.json({ success: true, message: "Payment recorded successfully!" });
-    });
+        // Step 2: Insert the Payment
+        await db.query(
+            `INSERT INTO payment (Contract_Bill_ID, Date, Amount, Remarks)
+            VALUES (?, CURDATE(), ?, ?)`,
+            [contractBillId, amountPaid, remarksValue]
+        );
+
+        console.log("WILL THIS WORK");
+        res.json({ success: true, message: "Payment recorded successfully" });
+
+    } catch (err) {
+        console.error("Database error:", err);
+        res.status(500).json({ error: "Database error" });
+    }
 });
 //End of payment
 

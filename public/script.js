@@ -852,13 +852,13 @@ async function paymentProcess(event) {
       const change = payment - rentPrice;
   
       // Send payment data to the server
-      const response = await fetch("/process-payment", {
+      const response = await fetch("http://localhost:3000/process-payment", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          personId: document.getElementById("personId").value,
+          personId: document.getElementById("personIdP").value,
           roomId: document.getElementById("roomId").value,
           amountPaid: payment,
           change: change,
@@ -866,7 +866,7 @@ async function paymentProcess(event) {
           remarks: remarks,
         }),
       });
-  
+      
       //Displays the change 
       document.getElementById("change").innerText = `Change: ₱${change.toFixed(2)}`;
       
